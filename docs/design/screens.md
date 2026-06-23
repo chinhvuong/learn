@@ -2,7 +2,7 @@
 
 > Companion to `CONTEXT.md` (glossary), `docs/adr/*` (decisions), `docs/prd/0001-mvp.md` (feature scope).
 > Wireframes are low-fidelity ASCII sketches capturing layout intent and decisions — not final visuals.
-> Target Language = English, Native Language = Vietnamese. App name TBD ("Ella" in mockups was a placeholder).
+> Target Language = English, Native Language = Vietnamese. App name: **Inflow** ("Ella" in mockups was a placeholder).
 
 ## Navigation model
 
@@ -295,7 +295,7 @@ C1 TÓM TẮT ITEM MỚI            C2 ÔN NHANH 60s (tùy chọn)
 │  └───────────────────────────┘│
 │ ─── below the fold ───        │
 │  More you might like (3 thẻ)  │
-│  Help [app] learn  ✓/✗ (định kỳ)│ ← Preference Tuner
+│  Help Inflow learn ✓/✗ (định kỳ)│ ← Preference Tuner
 │  〔 Ôn nhanh 〕 〔 Nghỉ — hẹn mai 〕│
 └───────────────────────────────┘
 ```

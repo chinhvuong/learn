@@ -1,4 +1,6 @@
-# Language Learning App (working title TBD)
+# Inflow
+
+> Name encodes the two core promises: comprehensible **in**put + staying **in flow** (keeping the learning momentum).
 
 An app that lets learners build lessons from content they personally find interesting (articles, podcasts, YouTube), plus curated level-based series. The core promise is comprehension of content you love, not rote memorization.
 
@@ -88,7 +90,7 @@ The human-readable, behavior-grounded explanation shown with every recommended L
 _Avoid_: Why this, explanation
 
 **Preference Tuner**:
-A quick yes/no control set (a "help me learn" prompt; app name TBD) that lets the learner directly accept/reject Interest Profile signals — by author, topic, and keyword — actively steering future recommendations. Shown **periodically or when the system's confidence about the learner's taste is low**, not on every completion (to avoid fatigue). On the Lesson-complete screen it lives **below the fold**, beneath the session recap, the single Top pick, and the one-tap "Continue" — so the momentum fast-path stays default and discovery/tuning is opt-in by scrolling.
+A quick yes/no control set (the "Help Inflow learn" prompt) that lets the learner directly accept/reject Interest Profile signals — by author, topic, and keyword — actively steering future recommendations. Shown **periodically or when the system's confidence about the learner's taste is low**, not on every completion (to avoid fatigue). On the Lesson-complete screen it lives **below the fold**, beneath the session recap, the single Top pick, and the one-tap "Continue" — so the momentum fast-path stays default and discovery/tuning is opt-in by scrolling.
 _Avoid_: Feedback form, survey
 
 **Discover** (Lesson Feed):
