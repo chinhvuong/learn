@@ -95,5 +95,20 @@
   "LP_COMPLETE_TITLE": "Hoàn thành!",
   "LP_COMPLETE_RECAP": "+{{count}} Items absorbed · 📘{{v}} · 🧩{{c}} · ⚙{{g}}",
   "LP_COMPLETE_DELTA": "▲ +{{count}} · cumulative Items absorbed",
-  "LP_COMPLETE_CONTINUE": "Keep learning →"
+  "LP_COMPLETE_CONTINUE": "Keep learning →",
+  "HOME_STREAK_A11Y": "{{count}}-day streak",
+  "HOME_LEVEL_READING": "Reading",
+  "HOME_LEVEL_LISTENING": "Listening",
+  "HOME_NORTH_STAR_A11Y": "{{count}} Items absorbed",
+  "HOME_NORTH_STAR_CAPTION": "words · chunks · grammar absorbed",
+  "HOME_ABSORBED_TODAY": "+{{count}} today",
+  "HOME_DAILY_GOAL": "Today's goal",
+  "HOME_DAILY_GOAL_MINUTES": "{{progress}}/{{target}}'",
+  "HOME_DAILY_GOAL_ITEMS": "{{progress}}/{{target}} Items",
+  "HOME_START_RECOMMENDED": "Start",
+  "HOME_CONTINUE_RESUME_HINT": "Pick up where you left off",
+  "HOME_CONTINUE_RECOMMEND_HINT": "A new Lesson for you",
+  "HOME_LESSON_MINUTES": "{{count}} min",
+  "HOME_LESSON_SERIES_PROGRESS": "Series {{series}} · {{index}}/{{total}}",
+  "HOME_DISCOVER_TITLE": "Recommended for you"
 }

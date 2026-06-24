@@ -95,5 +95,20 @@
   "LP_COMPLETE_TITLE": "Hoàn thành!",
   "LP_COMPLETE_RECAP": "+{{count}} Item đã nạp · 📘{{v}} · 🧩{{c}} · ⚙{{g}}",
   "LP_COMPLETE_DELTA": "▲ +{{count}} · Item đã nạp tích luỹ",
-  "LP_COMPLETE_CONTINUE": "Học tiếp →"
+  "LP_COMPLETE_CONTINUE": "Học tiếp →",
+  "HOME_STREAK_A11Y": "Streak {{count}} ngày",
+  "HOME_LEVEL_READING": "đọc",
+  "HOME_LEVEL_LISTENING": "nghe",
+  "HOME_NORTH_STAR_A11Y": "{{count}} Item đã nạp",
+  "HOME_NORTH_STAR_CAPTION": "từ · chunk · ngữ pháp đã nạp",
+  "HOME_ABSORBED_TODAY": "+{{count}} hôm nay",
+  "HOME_DAILY_GOAL": "Mục tiêu hôm nay",
+  "HOME_DAILY_GOAL_MINUTES": "{{progress}}/{{target}}'",
+  "HOME_DAILY_GOAL_ITEMS": "{{progress}}/{{target}} Item",
+  "HOME_START_RECOMMENDED": "Bắt đầu",
+  "HOME_CONTINUE_RESUME_HINT": "Tiếp tục chỗ bạn đang dở",
+  "HOME_CONTINUE_RECOMMEND_HINT": "Bài học mới cho bạn",
+  "HOME_LESSON_MINUTES": "{{count}} phút",
+  "HOME_LESSON_SERIES_PROGRESS": "Series {{series}} · {{index}}/{{total}}",
+  "HOME_DISCOVER_TITLE": "Gợi ý cho bạn"
 }
