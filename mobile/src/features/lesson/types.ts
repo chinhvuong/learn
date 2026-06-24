@@ -1,0 +1,97 @@
+/**
+ * Lesson Player — Reading domain types.
+ *
+ * Models the common core of a Lesson (CONTEXT.md → "Lesson"): its Items, a
+ * tap-to-reveal Bilingual Passage, and the original text. This slice only
+ * covers the Reading Practice Mode (text Sources); Listening Replay layers on
+ * later (screens.md §10).
+ *
+ * ADR-0001 split: an Item here is the per-learner projection of a Candidate
+ * Item — the objective, shared derived data (lemma, type, CEFR, meaning) plus
+ * what this learner sees as notable. Absorbed status is per-learner and lives
+ * in the session reducer, never baked into the Item.
+ */
+
+import type {ItemKind} from '@/components/ui/ItemToken';
+
+/** CEFR band shown to the learner; Level is stored finely elsewhere. */
+export type CefrBand = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+
+/**
+ * A single learnable thing extracted from a Lesson — exactly one of the three
+ * Item types (CONTEXT.md → "Item"). `id` is the stable Candidate Item id used
+ * to key per-learner status in the session reducer.
+ */
+export interface Item {
+  /** Stable Candidate Item id (e.g. an Inventory id for Chunks/Grammar Points). */
+  id: string;
+  /** Which of the three Item types — drives the encoding (ItemToken). */
+  type: ItemKind;
+  /**
+   * Target-Language surface as it should read in the passage (e.g. `give up`).
+   * For a Grammar Point this is the Native-Language name of the pattern.
+   */
+  headword: string;
+  /** Native-Language (Vietnamese) meaning shown in the meaning card. */
+  meaning: string;
+  /** CEFR band of this Item. */
+  cefr: CefrBand;
+  /** IPA pronunciation (Vocabulary only). */
+  ipa?: string;
+  /** Part of speech / kind label, e.g. "động từ · B2", "chunk · B1". */
+  posLabel: string;
+  /** Chunk usage pattern (e.g. "theo sau: V-ing") or Grammar Point pattern. */
+  pattern?: string;
+  /** Authored Vietnamese explanation for a Grammar Point (ADR-0003). */
+  explanation?: string;
+  /** The sentence from the passage this Item appears in ("Trong bài"). */
+  example: string;
+  /**
+   * For Chunks (ADR-0004): whether this is a reference-Inventory anchor
+   * (stable id) or an LLM-detected novel candidate (lower confidence).
+   */
+  chunkOrigin?: 'anchor' | 'candidate';
+}
+
+/**
+ * One inline span of the Bilingual Passage. Either plain reading text, or a
+ * reference to an Item (by id) that renders as a tappable token.
+ */
+export type PassageSpan =
+  | {kind: 'text'; text: string}
+  | {kind: 'item'; itemId: string};
+
+/**
+ * A sentence of the Bilingual Passage: the Target-Language spans plus the
+ * Native-Language translation revealed on demand (never side-by-side by
+ * default — CONTEXT.md → "Bilingual Passage").
+ */
+export interface PassageSentence {
+  id: string;
+  /** Target-Language content, broken into plain text + Item tokens. */
+  spans: PassageSpan[];
+  /** Native-Language (Vietnamese) translation, revealed per-sentence on tap. */
+  translation: string;
+}
+
+/** The reading surface of a Lesson. */
+export interface BilingualPassage {
+  sentences: PassageSentence[];
+}
+
+/**
+ * A Lesson's Reading common core: its Items + Bilingual Passage. (Practice
+ * Modes layer on by Source type — only Reading is modeled here.)
+ */
+export interface Lesson {
+  id: string;
+  /** Display title (Vietnamese chrome shows the English Source title). */
+  title: string;
+  /** Topic tag (for recommendation/Interest Profile downstream). */
+  topic: string;
+  /** Reading difficulty band of the Lesson. */
+  cefr: CefrBand;
+  /** The projected Candidate Items the learner must process to complete. */
+  items: Item[];
+  passage: BilingualPassage;
+}
