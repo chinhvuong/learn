@@ -21,6 +21,7 @@ import { BullBoardConfigModule } from '../../bull-board/bull-board.module';
 
 // Feature Modules (api-side)
 import { UsersModule } from '@modules/users/users.module';
+import { LessonsModule } from '@modules/lessons/lessons.module';
 import { DemoApiModule } from '@modules/demo/demo-api.module';
 
 // Controllers
@@ -62,6 +63,7 @@ import { Global500MonitorFilter } from '@shared/filters/global-500-monitor.filte
     StorageModule,
     AuthModule,
     UsersModule,
+    LessonsModule,
     ...(process.env.BULLBOARD_ENABLED === 'true' ? [BullBoardConfigModule] : []),
     ...(process.env.DEMO_ENABLED === 'true' ? [DemoApiModule] : []),
   ],
