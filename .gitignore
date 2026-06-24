@@ -11,3 +11,6 @@
 
 # Claude Code runtime
 .claude/scheduled_tasks.lock
+
+# Firebase service-account fixture (provide locally; keep out of git)
+backend/test/fixtures/firebase-service-account.json
