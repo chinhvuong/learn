@@ -1,5 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import PlaceholderScreen from '@/screens/PlaceholderScreen.tsx';
 import {AppButton} from '@/components/ui';
 import {useNavigation} from '@react-navigation/native';
@@ -11,6 +12,7 @@ import {useNavigation} from '@react-navigation/native';
  */
 const LearnScreen: React.FC = () => {
   const navigation = useNavigation();
+  const {t} = useTranslation();
 
   return (
     <View className={'flex-1 bg-background'}>
@@ -25,14 +27,14 @@ const LearnScreen: React.FC = () => {
           className={'rounded-full'}
           onPress={() => navigation.navigate('LessonPlayer', {screen: 'Player'})}
         >
-          OPEN_LESSON_PLAYER
+          {t('OPEN_LESSON_PLAYER')}
         </AppButton>
         <AppButton
           variant={'outline'}
           className={'rounded-full'}
           onPress={() => navigation.navigate('Onboarding', {screen: 'Welcome'})}
         >
-          OPEN_ONBOARDING
+          {t('OPEN_ONBOARDING')}
         </AppButton>
       </View>
     </View>

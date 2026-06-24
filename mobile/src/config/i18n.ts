@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
-import * as RNLocalize from 'react-native-localize';
 import en from './locales/en.json';
 import vi from './locales/vi.json';
 import bn from './locales/bn.json';
@@ -70,20 +69,6 @@ export const LANGUAGES = {
 
 export type LanguageCode = keyof typeof LANGUAGES;
 
-const getDeviceLanguage = (): LanguageCode => {
-  const locales = RNLocalize.getLocales();
-
-  if (locales.length > 0) {
-    const deviceLanguage = locales[0].languageCode as LanguageCode;
-
-    if (Object.keys(LANGUAGES).includes(deviceLanguage)) {
-      return deviceLanguage;
-    }
-  }
-
-  return 'en';
-};
-
 const resources = {
   en: {translation: en},
 };
@@ -92,7 +77,10 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: getDeviceLanguage(),
+    // Inflow's UI is Vietnamese (English appears only as Lesson content), so the
+    // app initializes in Vietnamese rather than the device locale; the persisted
+    // `app.language` preference can still switch it at runtime via LanguageHelper.
+    lng: 'vi',
     fallbackLng: 'en',
     defaultNS: 'translation',
     ns: ['translation'],

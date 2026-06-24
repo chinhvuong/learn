@@ -1,5 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import PlaceholderScreen from '@/screens/PlaceholderScreen.tsx';
 import {AppButton} from '@/components/ui';
 import {useNavigation} from '@react-navigation/native';
@@ -11,6 +12,7 @@ import {useNavigation} from '@react-navigation/native';
  */
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
+  const {t} = useTranslation();
 
   return (
     <View className={'flex-1 bg-background'}>
@@ -25,7 +27,7 @@ const ProfileScreen: React.FC = () => {
           className={'rounded-full'}
           onPress={() => navigation.navigate('Settings')}
         >
-          SETTINGS
+          {t('SETTINGS')}
         </AppButton>
       </View>
     </View>

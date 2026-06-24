@@ -1,5 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {AppButton, AppText, Icon} from '@/components/ui';
 
 interface OnboardingStepProps {
@@ -22,7 +23,9 @@ const OnboardingStep: React.FC<OnboardingStepProps> = ({
                                                          icon = 'Sparkles',
                                                          ctaKey,
                                                          onNext,
-                                                       }) => (
+                                                       }) => {
+  const {t} = useTranslation();
+  return (
   <View className={'flex-1 bg-background px-8 pt-safe-offset-12 pb-safe-offset-8'}>
     <View className={'flex-1 items-center justify-center'}>
       <View className={'w-20 h-20 rounded-full bg-flowSoft items-center justify-center mb-6'}>
@@ -38,9 +41,10 @@ const OnboardingStep: React.FC<OnboardingStepProps> = ({
       ) : null}
     </View>
     <AppButton variant={'primary'} className={'rounded-full'} onPress={onNext}>
-      {ctaKey}
+      {t(ctaKey)}
     </AppButton>
   </View>
-);
+  );
+};
 
 export default OnboardingStep;

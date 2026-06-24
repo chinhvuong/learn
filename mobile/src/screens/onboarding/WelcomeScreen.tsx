@@ -1,5 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {AppButton, AppText, Icon} from '@/components/ui';
 import {useNavigation} from '@react-navigation/native';
 
@@ -10,6 +11,7 @@ import {useNavigation} from '@react-navigation/native';
  */
 const WelcomeScreen: React.FC = () => {
   const navigation = useNavigation();
+  const {t} = useTranslation();
 
   return (
     <View className={'flex-1 bg-background items-center justify-center px-8'}>
@@ -28,14 +30,14 @@ const WelcomeScreen: React.FC = () => {
           className={'rounded-full'}
           onPress={() => navigation.navigate('Onboarding', {screen: 'Topics'})}
         >
-          ONBOARDING_START
+          {t('ONBOARDING_START')}
         </AppButton>
         <AppButton
           variant={'ghost'}
           className={'rounded-full'}
           onPress={() => navigation.navigate('Main', {screen: 'LEARN'})}
         >
-          ONBOARDING_SKIP_TO_HOME
+          {t('ONBOARDING_SKIP_TO_HOME')}
         </AppButton>
       </View>
     </View>
