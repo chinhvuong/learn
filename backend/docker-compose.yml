@@ -1,0 +1,53 @@
+# Local infrastructure for Inflow backend.
+#
+# Compose project name → `inflow`. Only Postgres and Redis run in containers;
+# the NestJS app (api + worker) runs directly on the host via `yarn start:*`.
+# Container resources are namespaced:
+#   network:    inflow_network
+#   containers: inflow_postgres, inflow_redis
+# Host-side ports follow the 810x convention (see .env).
+
+name: inflow
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: inflow_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inflow
+    ports:
+      - '${DATABASE_PORT}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inflow_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: inflow_redis
+    ports:
+      - '${REDIS_PORT}:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - inflow_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  inflow_network:
+    driver: bridge
