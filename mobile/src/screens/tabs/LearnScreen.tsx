@@ -22,15 +22,15 @@ export default function LearnScreen() {
 
   return (
     <View
-      className={"flex-1 bg-background items-center justify-center px-8"}
+      className={"flex-1 bg-app-bg items-center justify-center px-8"}
       style={{paddingTop: insets.top, paddingBottom: insets.bottom}}
     >
       <View
         className={
-          "w-20 h-20 rounded-full bg-neutrals1000 items-center justify-center mb-6"
+          "w-20 h-20 rounded-full bg-flow-soft items-center justify-center mb-6"
         }
       >
-        <Icon name={"GraduationCap"} className={"text-primary w-9 h-9"}/>
+        <Icon name={"House"} className={"text-flow-ink w-9 h-9"}/>
       </View>
       <AppText variant={"heading2"} align={"center"}>
         {t("TAB_LEARN")}
