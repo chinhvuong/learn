@@ -95,5 +95,18 @@
   "LP_COMPLETE_TITLE": "Hoàn thành!",
   "LP_COMPLETE_RECAP": "+{{count}} Items absorbed · 📘{{v}} · 🧩{{c}} · ⚙{{g}}",
   "LP_COMPLETE_DELTA": "▲ +{{count}} · cumulative Items absorbed",
-  "LP_COMPLETE_CONTINUE": "Keep learning →"
+  "LP_COMPLETE_CONTINUE": "Keep learning →",
+  "LR_SENTENCE_PROGRESS": "sentence {{current}} / {{total}}",
+  "LR_HIDDEN_HINT": "text hidden — try listening",
+  "LR_REVEAL_TEXT": "Show text",
+  "LR_HIDE_TEXT": "Hide text",
+  "LR_PLAY": "Play",
+  "LR_PAUSE": "Pause",
+  "LR_SLOW": "slow",
+  "LR_REPLAY_SENTENCE": "Replay sentence",
+  "LR_PREV_SENTENCE": "Previous sentence",
+  "LR_NEXT_SENTENCE": "Next sentence",
+  "LR_REPLAY_ITEM": "Replay \"{{headword}}\"",
+  "LR_TRANSLATE_SENTENCE": "translate",
+  "LR_KARAOKE": "Karaoke (read-along)"
 }
