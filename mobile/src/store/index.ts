@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from 'redux-persist';
 import { MMKV } from 'react-native-mmkv';
 import appSlice from './slices/appSlice';
+import lessonSessionSlice from '@/features/lesson/lessonSessionSlice';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 // Create MMKV storage instance
@@ -23,9 +24,12 @@ const reduxStorage = {
   },
 };
 
-// Combine reducers
+// Combine reducers. `lessonSession` is the transient per-reading-pass state of
+// the Lesson Player — it is intentionally NOT persisted (kept out of the
+// whitelist below), so a Lesson always opens fresh.
 const rootReducer = combineReducers({
   app: appSlice,
+  lessonSession: lessonSessionSlice,
 });
 
 const persistedReducer = persistReducer({
