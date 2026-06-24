@@ -59,13 +59,15 @@ Implement issue #<N>: "<title>" in <repo>.
 Read first (source of truth, in this order):
 - CLAUDE.md, CONTEXT.md (domain glossary — use these exact terms verbatim)
 - docs/adr/* relevant to this area (don't re-decide settled architecture)
-- the issue body below
+- the issue body below — especially its `## Design reference` section
+- THE DESIGN ITSELF (for any slice with UI): open the exact section the issue's Design reference points to (see "Design fidelity" below). The design is the visual contract; the issue prose only summarizes it.
 
-<full issue body — What to build + Acceptance criteria>
+<full issue body — What to build + Acceptance criteria + Design reference>
 
 Rules:
 - This is a vertical slice: deliver a complete path through every layer it touches (schema/API/UI/state/tests), not one layer.
 - Satisfy EVERY acceptance-criteria checkbox. They are the contract.
+- For any UI, pixel-match the design section the issue references: exact Vietnamese copy, design tokens (never hardcode colors), spacing/radii/typography, and every state shown in the wireframes. Verify with a side-by-side (see "Design fidelity").
 - Match surrounding code style, naming, and patterns. Use the project's existing libraries/conventions.
 - Run the project's lint, typecheck, and tests; they must pass before you finish.
 - Work on a branch named `impl/<N>-<short-slug>`. Commit with a clear message ending:
@@ -83,12 +85,25 @@ Return: branch name, PR URL, lint/test status, the proof artifact path(s), and a
 
 Fill `<full issue body>` with the actual fetched body. Keep each agent scoped to exactly one issue.
 
+### Design fidelity (UI slices)
+
+For any issue that renders UI, "done" means it visually matches the design — not just that it functions. Each agent must:
+
+1. **Open the target design.** From the issue's `## Design reference`:
+   - Render the hi-fi handoff section in a browser: `mcp__playwright__browser_navigate` to `file:///<repo>/design_handoff_inflow_app/Inflow.dc.html#<anchor>` (the `support.js` runtime loads automatically), then `browser_take_screenshot` of the relevant phone frame. This is the pixel target.
+   - Read the matching `docs/design/screens.md` section for the ASCII wireframe, the full state inventory, and exact Vietnamese copy.
+   - Pull tokens/legend from the handoff README (OKLCH light+dark, type scale, Item-encoding legend).
+2. **Implement to match** — tokens (no hardcoded colors), spacing, radii, typography, copy verbatim, light AND dark, and every state the wireframe shows.
+3. **Diff it.** Screenshot your RN screen on the simulator, place it **side-by-side** with the design screenshot, and list concrete mismatches (color, spacing, font, copy, missing state). Fix them and re-diff until it matches, or document any deliberate delta with a reason.
+
+If the design and the issue text disagree, the design wins for visuals and the glossary/ADRs win for behavior — flag the conflict in the PR rather than guessing.
+
 ### Finish each issue (proof + brief + label)
 
 Every agent must do this before returning — it is part of "done", not optional:
 
 **1. Capture proof of work.** Pick the kind that actually demonstrates the slice works:
-- **UI / mobile slice** → run the app on the booted iOS simulator (`yarn ios` from `mobile/`, or reuse an already-booted device) and **take a real screenshot** of the implemented screen/state — use the `mobile_take_screenshot` / `mobile_save_screenshot` tools, or `xcrun simctl io booted screenshot proof/issue-<N>/<state>.png`. For a multi-state slice (e.g. the Lesson Player absorption gesture), capture before/after frames. Save under `proof/issue-<N>/`.
+- **UI / mobile slice** → run the app on the booted iOS simulator (`yarn ios` from `mobile/`, or reuse an already-booted device) and **take a real screenshot** of the implemented screen/state — use the `mobile_take_screenshot` / `mobile_save_screenshot` tools, or `xcrun simctl io booted screenshot proof/issue-<N>/<state>.png`. For a multi-state slice (e.g. the Lesson Player absorption gesture), capture before/after frames. Save under `proof/issue-<N>/`. **Also save the design-fidelity diff**: the design screenshot (`proof/issue-<N>/design-<state>.png`) next to your implementation (`impl-<state>.png`), so the PR shows design-vs-built side-by-side.
 - **Backend / engine / non-visual slice** → the proof is the **passing test run and/or a real API response**: save the relevant test output and a sample request/response to `proof/issue-<N>/result.md` (paste the `createLesson` JSON, the red→green diff, etc.). A screenshot of green tests counts too.
 - Commit the `proof/issue-<N>/` files on the branch so screenshots have durable raw URLs.
 
