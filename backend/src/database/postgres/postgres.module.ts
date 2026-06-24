@@ -6,11 +6,33 @@ import { TYPEORM_MODULE_OPTIONS } from '@database/constants/typeorm-module-optio
 
 import { UserEntity } from './entities/user.entity';
 import { UserProfileEntity } from './entities/user-profile.entity';
+import { SourceEntity } from './entities/source.entity';
+import { LessonEntity } from './entities/lesson.entity';
+import { ItemEntity } from './entities/item.entity';
+import { CandidateItemEntity } from './entities/candidate-item.entity';
 import { UserProfilesRepository } from './repositories/user-profile.repository';
 import { UsersRepository } from './repositories/user.repository';
+import { SourcesRepository } from './repositories/source.repository';
+import { LessonsRepository } from './repositories/lesson.repository';
+import { ItemsRepository } from './repositories/item.repository';
+import { CandidateItemsRepository } from './repositories/candidate-item.repository';
 
-const entities = [UserEntity, UserProfileEntity];
-const repositories = [UsersRepository, UserProfilesRepository];
+const entities = [
+  UserEntity,
+  UserProfileEntity,
+  SourceEntity,
+  LessonEntity,
+  ItemEntity,
+  CandidateItemEntity,
+];
+const repositories = [
+  UsersRepository,
+  UserProfilesRepository,
+  SourcesRepository,
+  LessonsRepository,
+  ItemsRepository,
+  CandidateItemsRepository,
+];
 
 /**
  * PostgreSQL Database Module
