@@ -2,9 +2,18 @@ import {NavigatorScreenParams} from '@react-navigation/native';
 import {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 
-// Onboarding Stack Navigator (Welcome → Topics → Reading Level → Golden First Lesson …)
+// Onboarding Stack Navigator — the value-before-signup first run
+// (screens.md "ONBOARDING"): Welcome → Topics → Reading Level → Golden First
+// Lesson (the root LessonPlayer, run before signup) → Result + Daily Goal →
+// Sign up → Push priming. The Golden First Lesson itself lives on the root
+// stack (LessonPlayer), so it isn't a member here.
 export type OnboardingStackParamList = {
   Welcome: undefined;
+  Topics: undefined;
+  ReadingLevel: undefined;
+  Result: undefined;
+  Signup: undefined;
+  PushPriming: undefined;
 };
 
 // Main Tab Navigator — the four Inflow tabs (screens.md "Navigation model").
