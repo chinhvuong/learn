@@ -138,5 +138,18 @@
   "LP_COMPLETE_NORTH_STAR_LABEL": "North Star",
   "LP_COMPLETE_DELTA": "▲ +{{count}} · Item đã nạp tích luỹ",
   "LP_COMPLETE_CONTINUE": "Học tiếp →",
-  "LP_COMPLETE_DISCOVERY_HEADING": "Gợi ý cho bạn"
+  "LP_COMPLETE_DISCOVERY_HEADING": "Gợi ý cho bạn",
+  "LR_SENTENCE_PROGRESS": "câu {{current}} / {{total}}",
+  "LR_HIDDEN_HINT": "lời đang ẩn — nghe thử",
+  "LR_REVEAL_TEXT": "Hiện lời",
+  "LR_HIDE_TEXT": "Ẩn lời",
+  "LR_PLAY": "Nghe",
+  "LR_PAUSE": "Tạm dừng",
+  "LR_SLOW": "chậm",
+  "LR_REPLAY_SENTENCE": "Nghe lại câu",
+  "LR_PREV_SENTENCE": "Câu trước",
+  "LR_NEXT_SENTENCE": "Câu sau",
+  "LR_REPLAY_ITEM": "Nghe lại riêng \"{{headword}}\"",
+  "LR_TRANSLATE_SENTENCE": "dịch",
+  "LR_KARAOKE": "Karaoke (đọc theo)"
 }

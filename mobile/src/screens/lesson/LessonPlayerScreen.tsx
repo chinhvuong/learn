@@ -10,9 +10,11 @@ import {
   NEXT_LESSON_DISCOVERY,
   PRE_ABSORBED_ITEMS,
 } from '@/features/lesson/goldenFirstLesson';
+import {GOLDEN_AUDIO_LESSON} from '@/features/lesson/goldenAudioLesson';
 import LessonLoadingView from '@/features/lesson/components/LessonLoadingView';
 import LessonCoreIntroPlayer from '@/features/lesson/components/LessonCoreIntroPlayer';
 import LessonReadingPlayer from '@/features/lesson/components/LessonReadingPlayer';
+import LessonListeningPlayer from '@/features/lesson/components/LessonListeningPlayer';
 import LessonComprehensionQuiz from '@/features/lesson/components/LessonComprehensionQuiz';
 import LessonCompleteView from '@/features/lesson/components/LessonCompleteView';
 
@@ -25,26 +27,29 @@ type Props = RootStackScreenProps<'LessonPlayer'>;
  * Lesson Player — presented as a full-screen modal stack over the tabs
  * (issue #4). Orchestrates the phase machine for one pass through a Lesson:
  *
- *   loading → core → reading → complete
+ *   loading → core → reading → quiz → complete
  *
  * `loading` shows a spinner while the Lesson is prepared (screens.md §13/E4);
  * `core` introduces each new Item one at a time before the reading surface
  * (the flashcard preview of "Lõi chung"); `reading` is the Reading Practice
- * Mode (§9) — Bilingual Passage + absorption gesture + North Star; `complete`
- * is the session recap. Runs against the bundled Golden First Lesson (no
+ * Mode (§9) — Bilingual Passage + absorption gesture + North Star — or, for
+ * audio Sources (presence of `lesson.audio`), the Listening Replay Practice
+ * Mode (§10) selected by Source type; `quiz` is the optional comprehension
+ * check; `complete` is the session recap. Runs against bundled Lessons (no
  * backend dependency).
- *
- * Its `phase` state machine threads the closing steps of the Lesson:
- *   reading → quiz (comprehension) → complete (recap).
- * Listening Replay (§10) and the full recommendation surface layer on later.
  */
 export default function LessonPlayerScreen({route}: Props) {
   const navigation = useNavigation();
   const {lessonId} = route.params ?? {};
 
-  // Only the bundled Golden First Lesson exists today; a real lookup by
-  // `lessonId` arrives with the lesson API.
-  const lesson = GOLDEN_FIRST_LESSON;
+  // Only the two bundled Lessons exist today; a real lookup by `lessonId`
+  // arrives with the lesson API. Route to the audio Lesson when asked for it.
+  const lesson =
+    lessonId === GOLDEN_AUDIO_LESSON.id ? GOLDEN_AUDIO_LESSON : GOLDEN_FIRST_LESSON;
+
+  // The Practice Mode is chosen by Source type: audio Lessons get Listening
+  // Replay, text Lessons get Reading. This does not change Reading behavior.
+  const isAudioLesson = !!lesson.audio;
 
   // Seed the North Star from a demo cumulative total (the handoff starts at
   // 1228 and counts up as Items are Absorbed). Home will own this later.
@@ -80,6 +85,13 @@ export default function LessonPlayerScreen({route}: Props) {
           lesson={lesson}
           onClose={close}
           onStartReading={() => setPhase('reading')}
+        />
+      ) : phase === 'reading' && isAudioLesson ? (
+        <LessonListeningPlayer
+          lesson={lesson}
+          northStarBase={northStarBase}
+          onClose={close}
+          onCompleted={() => setPhase('complete')}
         />
       ) : phase === 'reading' ? (
         <LessonReadingPlayer

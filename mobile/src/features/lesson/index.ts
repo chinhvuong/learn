@@ -11,6 +11,17 @@ export {
   PRE_ABSORBED_ITEMS,
   PRE_ABSORBED_ITEM_IDS,
 } from './goldenFirstLesson';
+export {GOLDEN_AUDIO_LESSON} from './goldenAudioLesson';
+export {
+  useListeningReplayAudio,
+  createMockAudioClock,
+  SLOW_RATE,
+  NORMAL_RATE,
+} from './useListeningReplayAudio';
+export type {
+  LessonAudioClock,
+  ListeningReplayAudio,
+} from './useListeningReplayAudio';
 export {
   isAnswered,
   selectAnswer,
@@ -41,6 +52,7 @@ export type {ItemDecision, LessonSessionState} from './lessonSessionSlice';
 export {default as LessonLoadingView} from './components/LessonLoadingView';
 export {default as LessonCoreIntroPlayer} from './components/LessonCoreIntroPlayer';
 export {default as LessonReadingPlayer} from './components/LessonReadingPlayer';
+export {default as LessonListeningPlayer} from './components/LessonListeningPlayer';
 export {default as LessonComprehensionQuiz} from './components/LessonComprehensionQuiz';
 export {default as LessonCompleteView} from './components/LessonCompleteView';
 export type {
