@@ -6,11 +6,14 @@ import {RootStackScreenProps} from '@/navigation/types.ts';
 import {selectNorthStarLive} from '@/features/lesson/lessonSessionSlice';
 import {
   GOLDEN_FIRST_LESSON,
+  GOLDEN_FIRST_LESSON_QUIZ,
+  NEXT_LESSON_DISCOVERY,
   PRE_ABSORBED_ITEMS,
 } from '@/features/lesson/goldenFirstLesson';
 import LessonLoadingView from '@/features/lesson/components/LessonLoadingView';
 import LessonCoreIntroPlayer from '@/features/lesson/components/LessonCoreIntroPlayer';
 import LessonReadingPlayer from '@/features/lesson/components/LessonReadingPlayer';
+import LessonComprehensionQuiz from '@/features/lesson/components/LessonComprehensionQuiz';
 import LessonCompleteView from '@/features/lesson/components/LessonCompleteView';
 
 /** Simulated lesson-build delay before the core preview (handoff: ~1.5s). */
@@ -31,6 +34,8 @@ type Props = RootStackScreenProps<'LessonPlayer'>;
  * is the session recap. Runs against the bundled Golden First Lesson (no
  * backend dependency).
  *
+ * Its `phase` state machine threads the closing steps of the Lesson:
+ *   reading → quiz (comprehension) → complete (recap).
  * Listening Replay (§10) and the full recommendation surface layer on later.
  */
 export default function LessonPlayerScreen({route}: Props) {
@@ -46,7 +51,7 @@ export default function LessonPlayerScreen({route}: Props) {
   const northStarBase = 1228;
 
   const [phase, setPhase] = useState<
-    'loading' | 'core' | 'reading' | 'complete'
+    'loading' | 'core' | 'reading' | 'quiz' | 'complete'
   >('loading');
   const session = useAppSelector(state => state.lessonSession);
   const northStarLive =
@@ -82,15 +87,28 @@ export default function LessonPlayerScreen({route}: Props) {
           preAbsorbedItems={PRE_ABSORBED_ITEMS}
           northStarBase={northStarBase}
           onClose={close}
-          onCompleted={() => setPhase('complete')}
+          onCompleted={() => setPhase('quiz')}
+        />
+      ) : phase === 'quiz' ? (
+        <LessonComprehensionQuiz
+          lessonTitle={lesson.title}
+          questions={GOLDEN_FIRST_LESSON_QUIZ}
+          onClose={close}
+          onFinished={() => setPhase('complete')}
         />
       ) : (
         <LessonCompleteView
           items={lesson.items}
           decided={session.decided}
+          minutesStudied={4}
+          skill="reading"
+          skillLevel={lesson.cefr}
+          skillLevelNext="B2"
           northStarBase={northStarBase}
           northStarLive={northStarLive}
+          discovery={NEXT_LESSON_DISCOVERY}
           onContinue={close}
+          onOpenDiscovery={close}
         />
       )}
     </View>
