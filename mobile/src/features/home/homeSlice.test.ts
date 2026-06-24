@@ -14,10 +14,12 @@
 import reducer, {
   clearInProgressLesson,
   refreshRecommendation,
+  recordLessonCompletion,
   selectContinueLesson,
   selectDailyGoalPercent,
   selectIsResuming,
   setInProgressLesson,
+  setLevelScore,
   setRecommendedLesson,
   type HomeLessonRef,
   type HomeState,
@@ -131,5 +133,113 @@ describe('Levels → CEFR (independent reading / listening)', () => {
     const state = baseState();
     expect(scoreToCefr(state.readingLevel)).toBe('B1');
     expect(scoreToCefr(state.listeningLevel)).toBe('A2');
+  });
+});
+
+describe('recordLessonCompletion — real learning advances the gamification layer', () => {
+  it('increments the North Star by the Items Absorbed this session', () => {
+    let state = baseState();
+    const before = state.northStar;
+    state = reducer(
+      state,
+      recordLessonCompletion({absorbed: 12, minutes: 4, skill: 'reading', day: '2026-06-24'}),
+    );
+    expect(state.northStar).toBe(before + 12);
+  });
+
+  it('extends the Streak when the goal is met the day after the last one', () => {
+    // Seed yesterday as the last qualifying day so today continues the run.
+    // Seeded goal is 10 minutes, 6 already done → +4 min meets it.
+    let state: HomeState = {
+      ...baseState(),
+      streak: 12,
+      lastGoalMetDay: '2026-06-23',
+    };
+    state = reducer(
+      state,
+      recordLessonCompletion({absorbed: 5, minutes: 4, skill: 'reading', day: '2026-06-24'}),
+    );
+    expect(state.dailyGoalProgress).toBe(10);
+    // Streak extends because the goal flipped to met today (consecutive day).
+    expect(state.streak).toBe(13);
+    expect(state.lastGoalMetDay).toBe('2026-06-24');
+  });
+
+  it('opens the Streak at 1 when the goal is first met with no prior day', () => {
+    // Seeded lastGoalMetDay is null → the first qualifying day restarts at 1.
+    let state = baseState();
+    state = reducer(
+      state,
+      recordLessonCompletion({absorbed: 5, minutes: 4, skill: 'reading', day: '2026-06-24'}),
+    );
+    expect(state.streak).toBe(1);
+    expect(state.lastGoalMetDay).toBe('2026-06-24');
+  });
+
+  it('does not advance the Streak when the Daily Goal is not yet met', () => {
+    let state = baseState();
+    const streakBefore = state.streak;
+    state = reducer(
+      state,
+      recordLessonCompletion({absorbed: 2, minutes: 1, skill: 'reading', day: '2026-06-24'}),
+    );
+    expect(state.dailyGoalProgress).toBe(7); // 6 + 1, below 10
+    expect(state.streak).toBe(streakBefore);
+  });
+
+  it('clears the in-progress Lesson on completion', () => {
+    let state = baseState();
+    expect(state.inProgressLesson).not.toBeNull();
+    state = reducer(
+      state,
+      recordLessonCompletion({absorbed: 3, minutes: 4, skill: 'reading', day: '2026-06-24'}),
+    );
+    expect(state.inProgressLesson).toBeNull();
+  });
+
+  it('appends a Level-up milestone to the trophy case when a band is crossed', () => {
+    // Seed Listening at 33 (A2, one below the B1 boundary at 34) so +2 crosses.
+    let state: HomeState = {...baseState(), listeningLevel: 33};
+    const before = state.earnedMilestones.length;
+    state = reducer(
+      state,
+      recordLessonCompletion({
+        absorbed: 1,
+        minutes: 4,
+        skill: 'listening',
+        levelGain: 2,
+        day: '2026-06-24',
+      }),
+    );
+    expect(scoreToCefr(state.listeningLevel)).toBe('B1');
+    const added = state.earnedMilestones.slice(before);
+    expect(added).toContainEqual({
+      kind: 'levelUp',
+      skill: 'listening',
+      fromBand: 'A2',
+      toBand: 'B1',
+    });
+  });
+});
+
+describe('setLevelScore — Level-up moment from behavior (no test)', () => {
+  it('records a Level-up milestone when the new score crosses a band', () => {
+    let state: HomeState = {...baseState(), readingLevel: 49}; // B1, boundary B2=50
+    const before = state.earnedMilestones.length;
+    state = reducer(state, setLevelScore({skill: 'reading', score: 51}));
+    expect(scoreToCefr(state.readingLevel)).toBe('B2');
+    expect(state.earnedMilestones.slice(before)).toContainEqual({
+      kind: 'levelUp',
+      skill: 'reading',
+      fromBand: 'B1',
+      toBand: 'B2',
+    });
+  });
+
+  it('records nothing when the score stays within the band', () => {
+    let state: HomeState = {...baseState(), readingLevel: 40};
+    const before = state.earnedMilestones.length;
+    state = reducer(state, setLevelScore({skill: 'reading', score: 45}));
+    expect(state.earnedMilestones).toHaveLength(before);
   });
 });

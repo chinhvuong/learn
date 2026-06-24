@@ -1,10 +1,21 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {useNavigation} from '@react-navigation/native';
 import {useAppDispatch, useAppSelector} from '@/store/hooks';
 import {RootStackScreenProps} from '@/navigation/types.ts';
-import {selectNorthStarLive} from '@/features/lesson/lessonSessionSlice';
+import {
+  countAbsorbed,
+  selectNorthStarLive,
+} from '@/features/lesson/lessonSessionSlice';
+import {recordLessonCompletion} from '@/features/home';
+import {
+  detectMilestones,
+  primaryMilestone,
+  selectQuickReview,
+  type GamificationSnapshot,
+  type Milestone,
+} from '@/features/gamification';
 import {
   GOLDEN_FIRST_LESSON,
   GOLDEN_FIRST_LESSON_QUIZ,
@@ -51,7 +62,6 @@ export default function LessonPlayerScreen({route}: Props) {
   const dispatch = useAppDispatch();
   const {t} = useTranslation();
   const {lessonId} = route.params ?? {};
-  const home = useAppSelector(state => state.home);
 
   // Only the two bundled Lessons exist today; a real lookup by `lessonId`
   // arrives with the lesson API. Route to the audio Lesson when asked for it.
@@ -70,6 +80,7 @@ export default function LessonPlayerScreen({route}: Props) {
     'loading' | 'core' | 'reading' | 'quiz' | 'complete'
   >('loading');
   const session = useAppSelector(state => state.lessonSession);
+  const home = useAppSelector(state => state.home);
   const northStarLive =
     session.lessonId === lesson.id
       ? selectNorthStarLive(session)
@@ -83,6 +94,62 @@ export default function LessonPlayerScreen({route}: Props) {
     }
     const timer = setTimeout(() => setPhase('core'), LESSON_LOADING_MS);
     return () => clearTimeout(timer);
+  }, [phase]);
+
+  // On reaching completion, fold this Completed Lesson into the gamification
+  // layer exactly once: advance the North Star / Daily Goal / Streak / Level and
+  // capture which major milestone (if any) fired, for the Celebration entry.
+  const recorded = useRef(false);
+  const [completionMilestone, setCompletionMilestone] = useState<Milestone | null>(null);
+  const [goalMet, setGoalMet] = useState(false);
+  useEffect(() => {
+    if (phase !== 'complete' || recorded.current) {
+      return;
+    }
+    recorded.current = true;
+    const absorbed = countAbsorbed(session);
+    const byType = {
+      vocabulary: lesson.items.filter(
+        i => i.type === 'vocabulary' && session.decided[i.id] === 'absorbed',
+      ).length,
+      chunk: lesson.items.filter(
+        i => i.type === 'chunk' && session.decided[i.id] === 'absorbed',
+      ).length,
+      grammarPoint: lesson.items.filter(
+        i => i.type === 'grammarPoint' && session.decided[i.id] === 'absorbed',
+      ).length,
+    };
+    const skill: 'reading' | 'listening' = isAudioLesson ? 'listening' : 'reading';
+
+    // Snapshot before/after so we can detect any milestone crossed here. The
+    // store mutation happens in the reducer; we re-derive the milestone from the
+    // same before-state + the projected after-state for the Celebration entry.
+    const before: GamificationSnapshot = {
+      northStar: home.northStar,
+      streak: home.streak,
+      readingLevel: home.readingLevel,
+      listeningLevel: home.listeningLevel,
+    };
+    dispatch(
+      recordLessonCompletion({
+        absorbed,
+        absorbedByType: byType,
+        minutes: 4,
+        skill,
+      }),
+    );
+    // Project the after-state the reducer produces (level +2, streak +1 if the
+    // goal flips to met today) to choose the Celebration to offer.
+    const projectedAfter: GamificationSnapshot = {
+      northStar: before.northStar + absorbed,
+      streak: before.streak, // streak only moves on the day-boundary logic
+      readingLevel: skill === 'reading' ? before.readingLevel + 2 : before.readingLevel,
+      listeningLevel: skill === 'listening' ? before.listeningLevel + 2 : before.listeningLevel,
+    };
+    const fired = primaryMilestone(detectMilestones(before, projectedAfter));
+    setCompletionMilestone(fired);
+    setGoalMet(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   const close = () => navigation.goBack();
@@ -131,6 +198,26 @@ export default function LessonPlayerScreen({route}: Props) {
     }
   };
 
+  // Open the full-screen Celebration for the milestone that fired this
+  // completion (tier 2; reached from the completion screen's milestone entry).
+  const openCelebration = () => {
+    if (completionMilestone) {
+      navigation.navigate('Celebration', {milestone: completionMilestone});
+    }
+  };
+
+  // Open the optional 60-second quick review (light SRS) over the Items just
+  // Absorbed this session — opt-in, never a due-queue. Empty selection still
+  // opens (the view shows its no-debt empty state), so the exit is consistent.
+  const openQuickReview = () => {
+    const absorbedItems = lesson.items.filter(
+      item => session.decided[item.id] === 'absorbed',
+    );
+    navigation.navigate('QuickReview', {
+      prompts: selectQuickReview(absorbedItems),
+    });
+  };
+
   return (
     <View className="flex-1 bg-background" testID={lessonId ? `lesson-${lessonId}` : undefined}>
       {phase === 'loading' ? (
@@ -168,15 +255,21 @@ export default function LessonPlayerScreen({route}: Props) {
           items={lesson.items}
           decided={session.decided}
           minutesStudied={4}
-          skill="reading"
+          skill={isAudioLesson ? 'listening' : 'reading'}
           skillLevel={lesson.cefr}
           skillLevelNext="B2"
           northStarBase={northStarBase}
           northStarLive={northStarLive}
           recommended={recommended}
+          streak={home.streak}
+          goalMet={goalMet}
+          hasMilestone={completionMilestone !== null}
           discovery={NEXT_LESSON_DISCOVERY}
           onContinue={continueToRecommended}
           onOpenDiscovery={close}
+          onCelebrate={openCelebration}
+          onQuickReview={openQuickReview}
+          onRest={close}
         />
       )}
     </View>

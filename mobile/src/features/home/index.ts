@@ -12,9 +12,12 @@ export {
   refreshRecommendation,
   setRecommendedLesson,
   setDailyGoal,
+  setLevelScore,
+  recordLessonCompletion,
   selectContinueLesson,
   selectIsResuming,
   selectDailyGoalPercent,
+  selectBandProgress,
 } from './homeSlice';
 export type {HomeState, HomeLessonRef, DailyGoalUnit} from './homeSlice';
 export {nextLesson} from './recommendation';

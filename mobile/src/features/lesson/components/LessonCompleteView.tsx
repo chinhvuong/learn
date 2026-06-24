@@ -58,12 +58,31 @@ export interface LessonCompleteViewProps {
    * recommendation"). Absent only when the engine has nothing eligible.
    */
   recommended?: RecommendedNextLesson | null;
+  /** The learner's current Streak (folded streak pill). */
+  streak: number;
+  /**
+   * Whether today's **Daily Goal** is met — folds the small "goal met"
+   * celebration in (the everyday tier; CONTEXT.md → "Celebration moment").
+   * When not met, the badge is omitted entirely (no separate screen either way).
+   */
+  goalMet: boolean;
+  /**
+   * True when a **major milestone** fired this completion — surfaces the
+   * "Đạt mốc lớn? Xem màn ăn mừng →" link into the full-screen Celebration.
+   */
+  hasMilestone?: boolean;
   /** Below-the-fold discovery suggestions (recommendation target stubbed). */
   discovery?: DiscoverySuggestion[];
   /** One-tap Continue — opens the recommended Next Lesson (preloaded). */
   onContinue: () => void;
   /** Open a below-the-fold discovery suggestion (stubbed handoff). */
   onOpenDiscovery?: (id: string) => void;
+  /** Open the full-screen Celebration (shown when a major milestone fired). */
+  onCelebrate?: () => void;
+  /** Open the optional 60-second quick review (light SRS). */
+  onQuickReview?: () => void;
+  /** The guilt-free rest exit ("Nghỉ — hẹn mai 👋"). */
+  onRest?: () => void;
 }
 
 /**
@@ -87,9 +106,15 @@ export default function LessonCompleteView({
   northStarBase,
   northStarLive,
   recommended,
+  streak,
+  goalMet,
+  hasMilestone = false,
   discovery = [],
   onContinue,
   onOpenDiscovery,
+  onCelebrate,
+  onQuickReview,
+  onRest,
 }: LessonCompleteViewProps) {
   const {t} = useTranslation();
   const colors = useColors();
@@ -115,12 +140,15 @@ export default function LessonCompleteView({
     <ScrollView
       style={{backgroundColor: colors.appBg}}
       contentContainerStyle={styles.content}>
-      {/* Today's goal met — warm celebration pill (handoff completion top). */}
-      <View style={[styles.goalPill, {backgroundColor: colors.warmSoft}]}>
-        <AppText raw style={[styles.goalPillText, {color: colors.warmInk}]}>
-          {t('LP_COMPLETE_GOAL_MET')}
-        </AppText>
-      </View>
+      {/* Daily Goal met — the everyday-tier celebration folded in as a small
+          warm "goal met" badge (no separate screen). Omitted when not met. */}
+      {goalMet ? (
+        <View style={[styles.goalPill, {backgroundColor: colors.warmSoft}]}>
+          <AppText raw style={[styles.goalPillText, {color: colors.warmInk}]}>
+            {t('LP_COMPLETE_GOAL_MET')}
+          </AppText>
+        </View>
+      ) : null}
       <AppText raw style={styles.emoji}>
         🎉
       </AppText>
@@ -185,7 +213,7 @@ export default function LessonCompleteView({
         </AppText>
         <View style={[styles.streakPill, {backgroundColor: colors.warmSoft}]}>
           <AppText raw style={[styles.streakPillText, {color: colors.warmInk}]}>
-            {t('LP_COMPLETE_STREAK', {count: 12})}
+            {t('LP_COMPLETE_STREAK', {count: streak})}
           </AppText>
         </View>
       </View>
@@ -247,6 +275,42 @@ export default function LessonCompleteView({
           </AppButton>
         </View>
       )}
+
+      {/* Major-milestone entry — only when a Streak/Level-up/round North Star
+          fired. Tier 2 lives full-screen, reached from here (handoff §11). */}
+      {hasMilestone ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onCelebrate}
+          style={styles.celebrateLink}>
+          <AppText raw style={[styles.celebrateLinkText, {color: colors.ink3}]}>
+            {t('LP_COMPLETE_MILESTONE_PROMPT')}{' '}
+            <AppText raw style={[styles.celebrateLinkCta, {color: colors.warmInk}]}>
+              {t('LP_COMPLETE_MILESTONE_CTA')}
+            </AppText>
+          </AppText>
+        </Pressable>
+      ) : null}
+
+      {/* Guilt-free exits: optional quick review (light SRS) + rest reminder. */}
+      <View style={styles.exitRow}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onQuickReview}
+          style={[styles.exitBtn, {backgroundColor: colors.surface, borderColor: colors.border}]}>
+          <AppText raw style={[styles.exitText, {color: colors.ink2}]}>
+            {t('LP_COMPLETE_QUICK_REVIEW')}
+          </AppText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onRest}
+          style={[styles.exitBtn, {backgroundColor: colors.surface, borderColor: colors.border}]}>
+          <AppText raw style={[styles.exitText, {color: colors.ink2}]}>
+            {t('LP_COMPLETE_REST')}
+          </AppText>
+        </Pressable>
+      </View>
 
       {/* ─── below the fold ─── richer discovery (opt-in by scrolling). */}
       {discovery.length > 0 ? (
@@ -394,6 +458,18 @@ const styles = StyleSheet.create({
   recoMeta: {fontFamily: InflowFonts.ui.semibold, fontSize: 11.5, marginTop: 2},
   recoMatch: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
   recoReason: {fontFamily: InflowFonts.ui.semibold, fontSize: 12, marginBottom: 12},
+  celebrateLink: {alignSelf: 'center', marginTop: 16},
+  celebrateLinkText: {fontFamily: InflowFonts.ui.semibold, fontSize: 12.5},
+  celebrateLinkCta: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
+  exitRow: {flexDirection: 'row', alignSelf: 'stretch', gap: 10, marginTop: 16},
+  exitBtn: {
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 14,
+  },
+  exitText: {fontFamily: InflowFonts.ui.bold, fontSize: 14},
   discovery: {alignSelf: 'stretch', marginTop: 28},
   foldDivider: {height: 1, alignSelf: 'stretch', marginBottom: 18},
   discoveryHeading: {

@@ -5,6 +5,8 @@ import {useAppSelector} from "@/store/hooks.ts";
 import MainTabNavigator from "./MainTabNavigator";
 import OnboardingStackNavigator from "./OnboardingStackNavigator";
 import LessonPlayerScreen from "@/screens/lesson/LessonPlayerScreen.tsx";
+import CelebrationScreen from "@/screens/gamification/CelebrationScreen.tsx";
+import QuickReviewScreen from "@/screens/gamification/QuickReviewScreen.tsx";
 import SettingsScreen from "@/screens/SettingsScreen";
 import ComponentsDemo from "@/screens/ComponentsDemo";
 import DesignSystemScreen from "@/screens/DesignSystemScreen";
@@ -54,6 +56,22 @@ export default function RootStackNavigator() {
       <Stack.Screen
         name="LessonPlayer"
         component={LessonPlayerScreen}
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
+      <Stack.Screen
+        name="Celebration"
+        component={CelebrationScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen
+        name="QuickReview"
+        component={QuickReviewScreen}
         options={{
           headerShown: false,
           presentation: "modal",

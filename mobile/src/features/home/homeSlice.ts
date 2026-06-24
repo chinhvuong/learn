@@ -30,6 +30,18 @@ import {
   learnerFromHome,
   RECOMMENDATION_CATALOG,
 } from './recommendationCatalog';
+import {
+  advanceStreak,
+  isGoalMet,
+  progressInUnit,
+  todayKey,
+  type CompletionContribution,
+} from '@/features/gamification/dailyGoal';
+import {
+  detectMilestones,
+  type GamificationSnapshot,
+  type Milestone,
+} from '@/features/gamification/milestones';
 
 /** The Daily Goal can be measured in minutes of Input or in new Items. */
 export type DailyGoalUnit = 'minutes' | 'items';
@@ -59,6 +71,14 @@ export interface HomeState {
   northStar: number;
   /** Items Absorbed today (drives the "+N hôm nay" line). */
   absorbedToday: number;
+  /**
+   * The North Star broken down by Item type (Vocabulary / Chunk / Grammar
+   * Point) — the Profile's "📘 820 từ · 🧩 310 chunk · ⚙ 110 ngữ pháp" line
+   * (screens.md §14). The three always sum to the North Star.
+   */
+  vocabAbsorbed: number;
+  chunkAbsorbed: number;
+  grammarAbsorbed: number;
 
   /** The self-set Daily Goal target (e.g. 10 minutes, or 5 new Items). */
   dailyGoalTarget: number;
@@ -69,6 +89,13 @@ export interface HomeState {
 
   /** Consecutive days the learner met their Daily Goal. */
   streak: number;
+  /**
+   * The last local calendar day (`YYYY-MM-DD`) the Daily Goal was met. Drives
+   * the day-boundary Streak logic — `null` before any qualifying day.
+   */
+  lastGoalMetDay: string | null;
+  /** Cumulative minutes of Input (the "⏱ Input" stat on Profile). */
+  minutesInputTotal: number;
 
   /** Reading Level — fine 0–100 score; shown as CEFR. */
   readingLevel: number;
@@ -79,6 +106,14 @@ export interface HomeState {
   currentSeriesId?: string;
   /** 1-based index of the LAST Lesson the learner finished in that Series. */
   currentSeriesPosition?: number;
+
+  /**
+   * The major milestones the learner has earned, newest last — the Profile
+   * **trophy case** and the source of the shareable **Milestone Card**. Only
+   * full-screen-worthy milestones land here (Streak 7/30/100, Level up, round
+   * North Star); the everyday Daily-Goal tier never does.
+   */
+  earnedMilestones: Milestone[];
 
   /**
    * The Lesson the learner left unfinished. `null` when nothing is in progress
@@ -108,12 +143,18 @@ export interface HomeState {
 const initialState: HomeState = {
   northStar: 1240,
   absorbedToday: 18,
+  // Profile breakdown (§14): 820 từ · 310 chunk · 110 NP = 1,240.
+  vocabAbsorbed: 820,
+  chunkAbsorbed: 310,
+  grammarAbsorbed: 110,
 
   dailyGoalTarget: 10,
   dailyGoalUnit: 'minutes',
   dailyGoalProgress: 6,
 
   streak: 12,
+  lastGoalMetDay: null,
+  minutesInputTotal: 14 * 60, // 14h total Input (Profile §14)
 
   // Reading commonly outpaces Listening — seed Reading at B1, Listening at A2.
   readingLevel: 40, // B1
@@ -123,6 +164,15 @@ const initialState: HomeState = {
   // can recommend the next-in-Series Lesson.
   currentSeriesId: CURRENT_SERIES_ID,
   currentSeriesPosition: 3,
+
+  // Seed the trophy case to mirror the Profile wireframe (§14): 1000 từ ·
+  // streak 7 · lên B1. These are display badges; new ones are appended on
+  // completion by `recordLessonCompletion`.
+  earnedMilestones: [
+    {kind: 'northStar', total: 1000},
+    {kind: 'streak', days: 7, northStar: 1000},
+    {kind: 'levelUp', skill: 'reading', fromBand: 'A2', toBand: 'B1'},
+  ],
 
   // Seed an in-progress Lesson so Continue resumes by default; clearing it
   // (clearInProgressLesson) falls Home back to the recommendation.
@@ -206,8 +256,113 @@ const homeSlice = createSlice({
       state.dailyGoalTarget = action.payload.target;
       state.dailyGoalUnit = action.payload.unit;
     },
+
+    /**
+     * Directly set one skill's fine Level score (the too-easy/too-hard
+     * self-correction signal, story 21). Detects a Level-up Celebration when the
+     * new score crosses a CEFR band — used by tests and the self-correct flow.
+     */
+    setLevelScore: (
+      state,
+      action: PayloadAction<{skill: 'reading' | 'listening'; score: number}>,
+    ) => {
+      const {skill, score} = action.payload;
+      const before = snapshot(state);
+      if (skill === 'reading') {
+        state.readingLevel = score;
+      } else {
+        state.listeningLevel = score;
+      }
+      appendMilestones(state, before);
+    },
+
+    /**
+     * Record one **Completed Lesson** into the habit/progress layer — the single
+     * write that advances the gamification state from real learning (Completed
+     * Lessons / absorbing Items; **Challenges never call this**). It:
+     *   - increments the **North Star** by the Items Absorbed this session;
+     *   - advances today's **Daily Goal** progress and, if met, the **Streak**
+     *     (date-aware, idempotent per day);
+     *   - nudges the skill's fine **Level** score (continuous i+1 self-correct);
+     *   - appends any newly-crossed major **milestones** to the trophy case.
+     * The reducer is the BEFORE/AFTER boundary milestone detection compares.
+     */
+    recordLessonCompletion: (
+      state,
+      action: PayloadAction<{
+        /** Items Absorbed this session (the North Star delta). */
+        absorbed: number;
+        /** Optional per-type breakdown (sums should equal `absorbed`). */
+        absorbedByType?: {vocabulary?: number; chunk?: number; grammarPoint?: number};
+        /** Minutes of Input this session (Daily Goal + total Input). */
+        minutes: number;
+        /** Which skill this Lesson trained (moves that Level). */
+        skill: 'reading' | 'listening';
+        /** Fine-score nudge applied to that skill's Level (default +2). */
+        levelGain?: number;
+        /** Local day key; injectable so the day boundary is testable. */
+        day?: string;
+      }>,
+    ) => {
+      const {absorbed, absorbedByType, minutes, skill, levelGain = 2, day} =
+        action.payload;
+      const today = day ?? todayKey();
+      const before = snapshot(state);
+
+      // North Star — cumulative Absorbed Items (the headline metric).
+      state.northStar += absorbed;
+      state.absorbedToday += absorbed;
+      state.minutesInputTotal += minutes;
+      state.vocabAbsorbed += absorbedByType?.vocabulary ?? 0;
+      state.chunkAbsorbed += absorbedByType?.chunk ?? 0;
+      state.grammarAbsorbed += absorbedByType?.grammarPoint ?? 0;
+
+      // Daily Goal — today's progress in the goal's own unit, then the Streak.
+      const contribution: CompletionContribution = {minutes, absorbed};
+      state.dailyGoalProgress += progressInUnit(contribution, state.dailyGoalUnit);
+      const met = isGoalMet(state.dailyGoalProgress, state.dailyGoalTarget);
+      const advanced = advanceStreak(
+        {streak: state.streak, lastGoalMetDay: state.lastGoalMetDay},
+        today,
+        met,
+      );
+      state.streak = advanced.streak;
+      state.lastGoalMetDay = advanced.lastGoalMetDay;
+
+      // Level — nudge the trained skill's fine score (continuous i+1).
+      if (skill === 'reading') {
+        state.readingLevel = Math.min(100, state.readingLevel + levelGain);
+      } else {
+        state.listeningLevel = Math.min(100, state.listeningLevel + levelGain);
+      }
+
+      // Completing a Lesson clears the in-progress marker (Continue recommends).
+      state.inProgressLesson = null;
+
+      appendMilestones(state, before);
+    },
   },
 });
+
+// --- Internal helpers (milestone detection over the reducer's own state) ---
+
+/** Snapshot the gamification fields milestone detection compares. */
+function snapshot(state: HomeState): GamificationSnapshot {
+  return {
+    northStar: state.northStar,
+    streak: state.streak,
+    readingLevel: state.readingLevel,
+    listeningLevel: state.listeningLevel,
+  };
+}
+
+/** Append any milestones crossed since `before` to the trophy case. */
+function appendMilestones(state: HomeState, before: GamificationSnapshot): void {
+  const crossed = detectMilestones(before, snapshot(state));
+  if (crossed.length > 0) {
+    state.earnedMilestones.push(...crossed);
+  }
+}
 
 // --- Selectors (pure; reused by the screen and tests) ---
 
@@ -232,12 +387,24 @@ export const selectDailyGoalPercent = (state: HomeState): number => {
   return Math.max(0, Math.min(100, Math.round(pct)));
 };
 
+/** Progress within the current CEFR band toward the next, as a 0–100 percent. */
+export const selectBandProgress = (score: number): number => {
+  const clamped = Math.max(0, Math.min(100, score));
+  // Bands sit ~17 points apart on the 0–100 scale (see cefr.ts); compute the
+  // position within the current band as a fill percentage for the Profile bars.
+  const BAND_WIDTH = 17;
+  const within = clamped % BAND_WIDTH;
+  return Math.round((within / BAND_WIDTH) * 100);
+};
+
 export const {
   setInProgressLesson,
   clearInProgressLesson,
   refreshRecommendation,
   setRecommendedLesson,
   setDailyGoal,
+  setLevelScore,
+  recordLessonCompletion,
 } = homeSlice.actions;
 
 export default homeSlice.reducer;
