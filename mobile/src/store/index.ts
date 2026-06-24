@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import { MMKV } from 'react-native-mmkv';
 import appSlice from './slices/appSlice';
 import lessonSessionSlice from '@/features/lesson/lessonSessionSlice';
+import createReducer from '@/features/create/createSlice';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 // Create MMKV storage instance
@@ -30,12 +31,16 @@ const reduxStorage = {
 const rootReducer = combineReducers({
   app: appSlice,
   lessonSession: lessonSessionSlice,
+  // `create` holds the Create tab's Creation Credit balance + creation phase.
+  // Credits are persisted so the monthly allowance survives relaunch until the
+  // real backend balance endpoint exists; the transient phase resets on launch.
+  create: createReducer,
 });
 
 const persistedReducer = persistReducer({
   key: 'root',
   storage: reduxStorage,
-  whitelist: ['app'],
+  whitelist: ['app', 'create'],
   stateReconciler: autoMergeLevel2 as any,
 }, rootReducer);
 
