@@ -13,7 +13,8 @@
  * "already-Absorbed Items highlighted inline" behavior is demonstrable.
  */
 
-import type {Lesson} from './types';
+import type {DiscoverySuggestion} from './components/LessonCompleteView';
+import type {Lesson, QuizQuestion} from './types';
 
 /**
  * Items the learner Absorbed in a previous Lesson that re-appear here, so they
@@ -143,6 +144,72 @@ export const GOLDEN_FIRST_LESSON: Lesson = {
     ],
   },
 };
+
+/**
+ * The post-reading comprehension Quiz for the Golden First Lesson — a short set
+ * of questions about the passage (ý chính · chi tiết · suy luận), mirroring the
+ * design handoff's `lpQuizData`. Ships bundled so the first run works offline.
+ *
+ * Completing the Quiz closes the Lesson and hands off to the Completion recap.
+ */
+export const GOLDEN_FIRST_LESSON_QUIZ: QuizQuestion[] = [
+  {
+    id: 'q-main',
+    type: 'mainIdea',
+    prompt: 'Đoạn văn chủ yếu nói về điều gì?',
+    options: [
+      'AI đang thay đổi cách chúng ta làm việc — dù vài người còn e ngại',
+      'Cách sửa một chiếc máy tính cũ',
+      'Lịch sử của ngành du lịch',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 'q-detail-habits',
+    type: 'detail',
+    prompt: 'Theo bài, nhiều công ty làm gì với những thói quen cũ?',
+    options: [
+      'Từ bỏ chúng (give up)',
+      'Giữ nguyên không đổi',
+      'Bán lại cho công ty khác',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 'q-detail-workers',
+    type: 'detail',
+    prompt: 'Bài viết nói một số người lao động cảm thấy thế nào với sự thay đổi?',
+    options: [
+      'Miễn cưỡng, e ngại (reluctant)',
+      'Rất hào hứng',
+      'Hoàn toàn thờ ơ',
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: 'q-inference',
+    type: 'inference',
+    prompt: 'Nếu các nhóm học cách dùng công cụ tốt, bài viết ngụ ý điều gì?',
+    options: [
+      'Họ sẽ tiết kiệm nhiều giờ mỗi tuần',
+      'Họ sẽ mất thêm thời gian',
+      'Sẽ không có gì thay đổi',
+    ],
+    correctIndex: 0,
+  },
+];
+
+/**
+ * Stub Next-Lesson discovery suggestions shown below the fold on the Completion
+ * recap (CONTEXT.md → "Discover" / "Next Lesson recommendation"). The real
+ * recommendation handoff (priority A→B→D matching by Level + Interest Profile)
+ * is wired by #3's consumer slice; these are placeholders so the below-the-fold
+ * surface is demonstrable today.
+ */
+export const NEXT_LESSON_DISCOVERY: DiscoverySuggestion[] = [
+  {id: 'ai-healthcare', title: 'AI in Healthcare', meta: '5 phút · Công nghệ · B1'},
+  {id: 'remote-work', title: 'The Rise of Remote Work', meta: '4 phút · Công nghệ · B1'},
+];
 
 /**
  * The pre-Absorbed `tools` Item, used to render its inline token (review-in-
