@@ -13,6 +13,7 @@
 
 import reducer, {
   clearInProgressLesson,
+  refreshRecommendation,
   selectContinueLesson,
   selectDailyGoalPercent,
   selectIsResuming,
@@ -28,6 +29,9 @@ const REC: HomeLessonRef = {
   title: 'A Recommended Lesson',
   estimatedMinutes: 6,
 };
+/** The new `setRecommendedLesson` payload carries the Reason + match % too. */
+const setRec = (lesson: HomeLessonRef) =>
+  setRecommendedLesson({lesson, reason: 'vì lý do nào đó', matchPct: 90});
 const IN_PROGRESS: HomeLessonRef = {
   lessonId: 'in-progress-lesson',
   title: 'An Unfinished Lesson',
@@ -40,7 +44,7 @@ const baseState = (): HomeState =>
 describe('homeSlice — Continue / resume', () => {
   it('Continue resumes the in-progress Lesson when one exists', () => {
     let state = baseState();
-    state = reducer(state, setRecommendedLesson(REC));
+    state = reducer(state, setRec(REC));
     state = reducer(state, setInProgressLesson(IN_PROGRESS));
 
     expect(selectIsResuming(state)).toBe(true);
@@ -49,7 +53,7 @@ describe('homeSlice — Continue / resume', () => {
 
   it('Continue recommends a new Lesson only when nothing is in progress', () => {
     let state = baseState();
-    state = reducer(state, setRecommendedLesson(REC));
+    state = reducer(state, setRec(REC));
     state = reducer(state, clearInProgressLesson());
 
     expect(selectIsResuming(state)).toBe(false);
@@ -58,7 +62,7 @@ describe('homeSlice — Continue / resume', () => {
 
   it('clearing the in-progress Lesson flips Continue to the recommendation', () => {
     let state = baseState();
-    state = reducer(state, setRecommendedLesson(REC));
+    state = reducer(state, setRec(REC));
     state = reducer(state, setInProgressLesson(IN_PROGRESS));
     expect(selectContinueLesson(state)?.lessonId).toBe(IN_PROGRESS.lessonId);
 
@@ -71,6 +75,37 @@ describe('homeSlice — Continue / resume', () => {
     state = reducer(state, clearInProgressLesson());
     state = reducer(state, setRecommendedLesson(null));
     expect(selectContinueLesson(state)).toBeNull();
+  });
+});
+
+describe('homeSlice — recommendation (Home Continue fallback)', () => {
+  it('seeds an engine-derived recommendation with a Reason + match %', () => {
+    const state = baseState();
+    // Home's Continue falls back to this when nothing is in progress.
+    expect(state.recommendedLesson).not.toBeNull();
+    expect(state.recommendedReason).toBeTruthy();
+    expect(state.recommendedMatchPct).toBeGreaterThanOrEqual(0);
+    expect(state.recommendedMatchPct).toBeLessThanOrEqual(100);
+  });
+
+  it('refreshRecommendation re-runs the engine and excludes the just-completed Lesson', () => {
+    let state = baseState();
+    const completed = state.recommendedLesson?.lessonId;
+    state = reducer(
+      state,
+      refreshRecommendation({justCompleted: completed}),
+    );
+    expect(state.recommendedLesson?.lessonId).not.toBe(completed);
+    expect(state.recommendedReason).toBeTruthy();
+    expect(state.recommendedMatchPct).not.toBeNull();
+  });
+
+  it('setRecommendedLesson(null) clears the recommendation Reason + %', () => {
+    let state = baseState();
+    state = reducer(state, setRecommendedLesson(null));
+    expect(state.recommendedLesson).toBeNull();
+    expect(state.recommendedReason).toBeNull();
+    expect(state.recommendedMatchPct).toBeNull();
   });
 });
 

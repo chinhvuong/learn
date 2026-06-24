@@ -184,6 +184,10 @@ export default function HomeView({onContinue, onOpenRecommended}: HomeViewProps)
                 <AppText raw variant="labelSmall" className="text-on-flow/80 mt-0.5">
                   {isResuming
                     ? t('HOME_CONTINUE_RESUME_HINT')
+                    : home.recommendedReason
+                    ? t('HOME_CONTINUE_RECOMMEND_REASON', {
+                        reason: home.recommendedReason,
+                      })
                     : t('HOME_CONTINUE_RECOMMEND_HINT')}
                 </AppText>
               </View>
@@ -241,13 +245,23 @@ export default function HomeView({onContinue, onOpenRecommended}: HomeViewProps)
                 <AppText raw variant="label" weight="medium" numberOfLines={1}>
                   {home.recommendedLesson.title}
                 </AppText>
-                <AppText raw variant="labelSmall" color="muted">
-                  {t('HOME_LESSON_MINUTES', {
-                    count: home.recommendedLesson.estimatedMinutes,
-                  })}
+                <AppText raw variant="labelSmall" color="muted" numberOfLines={1}>
+                  {home.recommendedReason ??
+                    t('HOME_LESSON_MINUTES', {
+                      count: home.recommendedLesson.estimatedMinutes,
+                    })}
                 </AppText>
               </View>
             </View>
+            {home.recommendedMatchPct != null ? (
+              <AppText
+                raw
+                variant="labelSmall"
+                weight="bold"
+                className="text-flow mr-1">
+                {t('LP_COMPLETE_RECO_MATCH', {pct: home.recommendedMatchPct})}
+              </AppText>
+            ) : null}
             <Icon name="ChevronRight" className="text-neutrals300 w-5 h-5" />
           </Pressable>
         </View>
