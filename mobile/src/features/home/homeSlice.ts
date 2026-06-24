@@ -24,6 +24,12 @@
 
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {GOLDEN_FIRST_LESSON} from '@/features/lesson/goldenFirstLesson';
+import {nextLesson} from './recommendation';
+import {
+  CURRENT_SERIES_ID,
+  learnerFromHome,
+  RECOMMENDATION_CATALOG,
+} from './recommendationCatalog';
 
 /** The Daily Goal can be measured in minutes of Input or in new Items. */
 export type DailyGoalUnit = 'minutes' | 'items';
@@ -69,16 +75,29 @@ export interface HomeState {
   /** Listening Level — fine 0–100 score; shown as CEFR. Often below Reading. */
   listeningLevel: number;
 
+  /** The Series the learner is currently progressing through (tier A), if any. */
+  currentSeriesId?: string;
+  /** 1-based index of the LAST Lesson the learner finished in that Series. */
+  currentSeriesPosition?: number;
+
   /**
    * The Lesson the learner left unfinished. `null` when nothing is in progress
    * — in which case Continue falls back to `recommendedLesson`.
    */
   inProgressLesson: HomeLessonRef | null;
   /**
-   * The recommended Next Lesson, used when nothing is in progress. Stubbed with
-   * the bundled Golden First Lesson until the recommendation slice (#3) lands.
+   * The recommended Next Lesson, used when nothing is in progress — produced by
+   * the recommendation engine (`nextLesson`, issue #13) and refreshed on launch
+   * and on completion. `null` only when the catalog has nothing eligible.
    */
   recommendedLesson: HomeLessonRef | null;
+  /**
+   * The human-readable Recommendation Reason shown with `recommendedLesson`
+   * (CONTEXT.md → "Recommendation Reason"), e.g. "vì bạn thích chủ đề Công nghệ".
+   */
+  recommendedReason: string | null;
+  /** The recommendation's match % (CONTEXT.md), shown as "94%". */
+  recommendedMatchPct: number | null;
 }
 
 /**
@@ -100,6 +119,11 @@ const initialState: HomeState = {
   readingLevel: 40, // B1
   listeningLevel: 24, // A2
 
+  // The learner is mid-way through their Starter Series (3 of 12 done) so tier A
+  // can recommend the next-in-Series Lesson.
+  currentSeriesId: CURRENT_SERIES_ID,
+  currentSeriesPosition: 3,
+
   // Seed an in-progress Lesson so Continue resumes by default; clearing it
   // (clearInProgressLesson) falls Home back to the recommendation.
   inProgressLesson: {
@@ -110,15 +134,30 @@ const initialState: HomeState = {
     seriesIndex: 3,
     seriesTotal: 12,
   },
-  recommendedLesson: {
-    lessonId: GOLDEN_FIRST_LESSON.id,
-    title: GOLDEN_FIRST_LESSON.title,
-    estimatedMinutes: 4,
-    seriesName: 'Công nghệ B1',
-    seriesIndex: 1,
-    seriesTotal: 12,
-  },
+  // Engine-derived recommendation (issue #13), so Home's Continue fallback and
+  // the Discover entry show a real Reason + match % from the first launch.
+  recommendedLesson: null,
+  recommendedReason: null,
+  recommendedMatchPct: null,
 };
+
+/**
+ * Run the recommendation engine against the catalog for the current learner and
+ * fold the result onto state (the recommended Lesson + its Reason + match %).
+ * Used to seed the initial state and to refresh on launch / after completion.
+ */
+function applyRecommendation(state: HomeState, justCompleted?: string): void {
+  const reco = nextLesson(
+    learnerFromHome(state),
+    RECOMMENDATION_CATALOG,
+    justCompleted,
+  );
+  state.recommendedLesson = reco?.lesson ?? null;
+  state.recommendedReason = reco?.reason ?? null;
+  state.recommendedMatchPct = reco?.matchPct ?? null;
+}
+
+applyRecommendation(initialState);
 
 const homeSlice = createSlice({
   name: 'home',
@@ -132,12 +171,32 @@ const homeSlice = createSlice({
     clearInProgressLesson: state => {
       state.inProgressLesson = null;
     },
-    /** Set the recommended Next Lesson (recommendation slice, #3). */
+    /**
+     * Re-run the recommendation engine (`nextLesson`, issue #13) and store the
+     * new Top pick + Reason + match %. Pass the just-completed Lesson id so the
+     * completion handoff never re-recommends the Lesson the learner just did.
+     */
+    refreshRecommendation: (
+      state,
+      action: PayloadAction<{justCompleted?: string} | undefined>,
+    ) => {
+      applyRecommendation(state, action.payload?.justCompleted);
+    },
+    /**
+     * Directly set the recommended Next Lesson + its Reason + match % (e.g. when
+     * a consumer computed the recommendation itself). `null` clears it.
+     */
     setRecommendedLesson: (
       state,
-      action: PayloadAction<HomeLessonRef | null>,
+      action: PayloadAction<{
+        lesson: HomeLessonRef;
+        reason: string;
+        matchPct: number;
+      } | null>,
     ) => {
-      state.recommendedLesson = action.payload;
+      state.recommendedLesson = action.payload?.lesson ?? null;
+      state.recommendedReason = action.payload?.reason ?? null;
+      state.recommendedMatchPct = action.payload?.matchPct ?? null;
     },
     /** Update the self-set Daily Goal (Settings, story 72). */
     setDailyGoal: (
@@ -176,6 +235,7 @@ export const selectDailyGoalPercent = (state: HomeState): number => {
 export const {
   setInProgressLesson,
   clearInProgressLesson,
+  refreshRecommendation,
   setRecommendedLesson,
   setDailyGoal,
 } = homeSlice.actions;

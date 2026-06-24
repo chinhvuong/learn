@@ -1,7 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {useNavigation} from '@react-navigation/native';
-import {useAppSelector} from '@/store/hooks';
+import {useAppDispatch, useAppSelector} from '@/store/hooks';
 import {RootStackScreenProps} from '@/navigation/types.ts';
 import {selectNorthStarLive} from '@/features/lesson/lessonSessionSlice';
 import {
@@ -11,6 +12,13 @@ import {
   PRE_ABSORBED_ITEMS,
 } from '@/features/lesson/goldenFirstLesson';
 import {GOLDEN_AUDIO_LESSON} from '@/features/lesson/goldenAudioLesson';
+import {
+  learnerFromHome,
+  nextLesson,
+  RECOMMENDATION_CATALOG,
+  refreshRecommendation,
+} from '@/features/home';
+import type {RecommendedNextLesson} from '@/features/lesson/components/LessonCompleteView';
 import LessonLoadingView from '@/features/lesson/components/LessonLoadingView';
 import LessonCoreIntroPlayer from '@/features/lesson/components/LessonCoreIntroPlayer';
 import LessonReadingPlayer from '@/features/lesson/components/LessonReadingPlayer';
@@ -39,8 +47,11 @@ type Props = RootStackScreenProps<'LessonPlayer'>;
  * backend dependency).
  */
 export default function LessonPlayerScreen({route}: Props) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Props['navigation']>();
+  const dispatch = useAppDispatch();
+  const {t} = useTranslation();
   const {lessonId} = route.params ?? {};
+  const home = useAppSelector(state => state.home);
 
   // Only the two bundled Lessons exist today; a real lookup by `lessonId`
   // arrives with the lesson API. Route to the audio Lesson when asked for it.
@@ -75,6 +86,50 @@ export default function LessonPlayerScreen({route}: Props) {
   }, [phase]);
 
   const close = () => navigation.goBack();
+
+  // The Next Lesson recommendation for the Completion recap: run the engine
+  // (`nextLesson`, issue #13) against the catalog for the current learner,
+  // excluding the Lesson just completed, and format the Top-pick card's meta
+  // ("5 phút · Công nghệ · B1") from the result (CONTEXT.md → "Recommendation
+  // Reason" — the card always carries a Reason + match %).
+  const recommended = useMemo<RecommendedNextLesson | null>(() => {
+    const reco = nextLesson(
+      learnerFromHome(home),
+      RECOMMENDATION_CATALOG,
+      lesson.id,
+    );
+    if (!reco) {
+      return null;
+    }
+    const topic = reco.tags.find(tag => tag.axis === 'topic')?.value;
+    const meta = t('HOME_LESSON_MINUTES', {
+      count: reco.lesson.estimatedMinutes,
+    }).concat(topic ? ` · ${topic}` : '', ` · ${reco.cefr}`);
+    return {
+      lessonId: reco.lesson.lessonId,
+      title: reco.lesson.title,
+      meta,
+      reason: reco.reason,
+      matchPct: reco.matchPct,
+    };
+  }, [home, lesson.id, t]);
+
+  // One-tap Continue opens the recommended (preloaded) Next Lesson, refreshes
+  // Home's recommendation for next time, and replaces this Player so Back does
+  // not return to the finished Lesson.
+  const continueToRecommended = () => {
+    dispatch(refreshRecommendation({justCompleted: lesson.id}));
+    if (recommended && 'push' in navigation) {
+      // `push` mounts a fresh Player instance for the recommended Lesson so its
+      // phase machine restarts (vs. `navigate`, which would only swap params).
+      (navigation as {push: (n: string, p: object) => void}).push(
+        'LessonPlayer',
+        {lessonId: recommended.lessonId},
+      );
+    } else {
+      close();
+    }
+  };
 
   return (
     <View className="flex-1 bg-background" testID={lessonId ? `lesson-${lessonId}` : undefined}>
@@ -118,8 +173,9 @@ export default function LessonPlayerScreen({route}: Props) {
           skillLevelNext="B2"
           northStarBase={northStarBase}
           northStarLive={northStarLive}
+          recommended={recommended}
           discovery={NEXT_LESSON_DISCOVERY}
-          onContinue={close}
+          onContinue={continueToRecommended}
           onOpenDiscovery={close}
         />
       )}

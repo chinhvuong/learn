@@ -19,6 +19,25 @@ export interface DiscoverySuggestion {
   meta: string;
 }
 
+/**
+ * The single Top-pick Next Lesson recommendation shown above the fold (screens.md
+ * §11; the `#core` completion frame). Carries the Recommendation Reason + match %
+ * the card must always show (CONTEXT.md → "Recommendation Reason"). Produced by
+ * the recommendation engine (`nextLesson`, issue #13).
+ */
+export interface RecommendedNextLesson {
+  /** The recommended Lesson id (deep-linked by the one-tap Continue). */
+  lessonId: string;
+  /** English Source title (e.g. "AI in Healthcare"). */
+  title: string;
+  /** Minutes · topic · CEFR caption (e.g. "5 phút · Công nghệ · B1"). */
+  meta: string;
+  /** Human-readable Recommendation Reason (e.g. "vì bạn thích chủ đề Công nghệ"). */
+  reason: string;
+  /** Match strength shown as a percent (e.g. 94 → "94%"). */
+  matchPct: number;
+}
+
 export interface LessonCompleteViewProps {
   items: Item[];
   decided: Record<string, ItemDecision>;
@@ -33,9 +52,15 @@ export interface LessonCompleteViewProps {
   /** North Star before this Lesson — animates up to + Absorbed this session. */
   northStarBase: number;
   northStarLive: number;
+  /**
+   * The Top-pick Next Lesson recommendation (Reason + match %) shown above the
+   * fold and preloaded behind the one-tap Continue (CONTEXT.md → "Next Lesson
+   * recommendation"). Absent only when the engine has nothing eligible.
+   */
+  recommended?: RecommendedNextLesson | null;
   /** Below-the-fold discovery suggestions (recommendation target stubbed). */
   discovery?: DiscoverySuggestion[];
-  /** One-tap Continue — recommendation handoff is stubbed (wired in #3). */
+  /** One-tap Continue — opens the recommended Next Lesson (preloaded). */
   onContinue: () => void;
   /** Open a below-the-fold discovery suggestion (stubbed handoff). */
   onOpenDiscovery?: (id: string) => void;
@@ -44,12 +69,13 @@ export interface LessonCompleteViewProps {
 /**
  * Lesson-complete recap (screens.md §11). The momentum fast-path stays default:
  * above the fold = session recap (minutes studied, Items Absorbed, skill-
- * specific Level) + the animated North Star count-up + a one-tap Continue CTA.
- * Richer discovery sits **below the fold** so scrolling is opt-in (CONTEXT.md →
- * "Discover" / "Preference Tuner").
+ * specific Level) + the animated North Star count-up + the single Top-pick Next
+ * Lesson recommendation (Reason + match %) + a one-tap Continue CTA that opens
+ * it. Richer discovery sits **below the fold** so scrolling is opt-in
+ * (CONTEXT.md → "Discover" / "Preference Tuner").
  *
- * The recommendation target behind Continue / discovery is **stubbed** here;
- * the real Next-Lesson handoff is wired by #3's consumer slice.
+ * The recommendation is produced by the engine (`nextLesson`, issue #13); the
+ * screen passes it in already resolved + preloaded for one-tap Continue.
  */
 export default function LessonCompleteView({
   items,
@@ -60,6 +86,7 @@ export default function LessonCompleteView({
   skillLevelNext,
   northStarBase,
   northStarLive,
+  recommended,
   discovery = [],
   onContinue,
   onOpenDiscovery,
@@ -163,14 +190,63 @@ export default function LessonCompleteView({
         </View>
       </View>
 
-      {/* One-tap Continue (recommendation handoff stubbed — wired in #3). */}
-      <View style={styles.cta}>
-        <AppButton variant="primary" onPress={onContinue}>
-          <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
-            {t('LP_COMPLETE_CONTINUE')}
+      {/* Top-pick Next Lesson recommendation (Reason + match %) + one-tap
+          Continue, preloaded (screens.md §11; the #core completion frame). */}
+      {recommended ? (
+        <View
+          style={[
+            styles.recoCard,
+            {
+              backgroundColor: colors.flowSoft,
+              borderColor: colors.flow,
+            },
+          ]}>
+          <AppText raw style={[styles.recoLabel, {color: colors.flowInk}]}>
+            {t('LP_COMPLETE_RECO_LABEL')}
           </AppText>
-        </AppButton>
-      </View>
+          <View style={styles.recoHeaderRow}>
+            <View style={[styles.recoPlay, {backgroundColor: colors.flow}]}>
+              <AppText raw style={[styles.recoPlayIcon, {color: colors.onFlow}]}>
+                ▶
+              </AppText>
+            </View>
+            <View style={styles.recoText}>
+              <AppText
+                raw
+                numberOfLines={1}
+                style={[styles.recoTitle, {color: colors.ink}]}>
+                {recommended.title}
+              </AppText>
+              <AppText
+                raw
+                numberOfLines={1}
+                style={[styles.recoMeta, {color: colors.flowInk}]}>
+                {recommended.meta}
+              </AppText>
+            </View>
+            <AppText raw style={[styles.recoMatch, {color: colors.flowInk}]}>
+              {t('LP_COMPLETE_RECO_MATCH', {pct: recommended.matchPct})}
+            </AppText>
+          </View>
+          <AppText raw style={[styles.recoReason, {color: colors.flowInk}]}>
+            {t('LP_COMPLETE_RECO_REASON', {reason: recommended.reason})}
+          </AppText>
+          <AppButton variant="primary" onPress={onContinue}>
+            <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
+              {t('LP_COMPLETE_CONTINUE')}
+            </AppText>
+          </AppButton>
+        </View>
+      ) : (
+        /* No recommendation available — keep the one-tap Continue alone. */
+        <View style={styles.cta}>
+          <AppButton variant="primary" onPress={onContinue}>
+            <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
+              {t('LP_COMPLETE_CONTINUE')}
+            </AppText>
+          </AppButton>
+        </View>
+      )}
 
       {/* ─── below the fold ─── richer discovery (opt-in by scrolling). */}
       {discovery.length > 0 ? (
@@ -284,6 +360,40 @@ const styles = StyleSheet.create({
   streakPillText: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
   cta: {alignSelf: 'stretch', marginTop: 24},
   ctaText: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
+  recoCard: {
+    alignSelf: 'stretch',
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginTop: 20,
+  },
+  recoLabel: {
+    fontFamily: InflowFonts.ui.extrabold,
+    fontSize: 10.5,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  recoHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    marginBottom: 11,
+  },
+  recoPlay: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recoPlayIcon: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
+  recoText: {flex: 1, minWidth: 0},
+  recoTitle: {fontFamily: InflowFonts.ui.bold, fontSize: 14.5},
+  recoMeta: {fontFamily: InflowFonts.ui.semibold, fontSize: 11.5, marginTop: 2},
+  recoMatch: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
+  recoReason: {fontFamily: InflowFonts.ui.semibold, fontSize: 12, marginBottom: 12},
   discovery: {alignSelf: 'stretch', marginTop: 28},
   foldDivider: {height: 1, alignSelf: 'stretch', marginBottom: 18},
   discoveryHeading: {
