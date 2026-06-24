@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import { MMKV } from 'react-native-mmkv';
 import appSlice from './slices/appSlice';
 import lessonSessionSlice from '@/features/lesson/lessonSessionSlice';
+import onboardingSlice from '@/features/onboarding/onboardingSlice';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 // Create MMKV storage instance
@@ -30,12 +31,16 @@ const reduxStorage = {
 const rootReducer = combineReducers({
   app: appSlice,
   lessonSession: lessonSessionSlice,
+  // `onboarding` IS persisted: the Interest Profile seed, seeded Levels, Daily
+  // Goal, and anonymous Golden-First-Lesson progress must survive across the
+  // pre-signup flow and the anonymous→account migration (PRD stories 1–11).
+  onboarding: onboardingSlice,
 });
 
 const persistedReducer = persistReducer({
   key: 'root',
   storage: reduxStorage,
-  whitelist: ['app'],
+  whitelist: ['app', 'onboarding'],
   stateReconciler: autoMergeLevel2 as any,
 }, rootReducer);
 
