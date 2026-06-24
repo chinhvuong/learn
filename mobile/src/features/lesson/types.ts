@@ -132,11 +132,39 @@ export interface LessonAudio {
 }
 
 /**
+ * The kind of comprehension a quiz question probes (screens.md §12; the
+ * handoff's `lpQuizData`). Each maps to an authored Vietnamese type label.
+ *   - `mainIdea`  — what the passage is mostly about (ý chính);
+ *   - `detail`    — a specific fact stated in the passage (chi tiết);
+ *   - `inference` — something implied but not stated outright (suy luận).
+ */
+export type QuizQuestionType = 'mainIdea' | 'detail' | 'inference';
+
+/**
+ * One comprehension question of the post-reading Quiz (CONTEXT.md → "Lesson";
+ * the optional consolidation that closes a Lesson). Authored alongside the
+ * Lesson so it ships bundled with the Golden First Lesson — no backend needed.
+ */
+export interface QuizQuestion {
+  /** Stable question id (keys per-question answer state in the quiz UI). */
+  id: string;
+  /** Which kind of comprehension this probes — drives the type chip. */
+  type: QuizQuestionType;
+  /** The question prompt, in the Native Language (Vietnamese). */
+  prompt: string;
+  /** Answer options, in display order (Native Language). */
+  options: string[];
+  /** Index into `options` of the correct answer. */
+  correctIndex: number;
+}
+
+/**
  * A Lesson's common core: its Items + Bilingual Passage + original text.
  * Practice Modes layer on by Source type — Reading runs on the core directly;
  * Listening Replay layers on for audio Sources, keyed off the optional `audio`
  * field (ADR-0002). The field is optional so text-Source Lessons (Reading only)
- * are unchanged.
+ * are unchanged. An optional post-reading Quiz (`QuizQuestion[]`) ships bundled
+ * with the Lesson.
  */
 export interface Lesson {
   id: string;
