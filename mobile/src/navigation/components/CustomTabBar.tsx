@@ -1,12 +1,10 @@
 import React from 'react';
-import {Dimensions, Text, TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {useColors} from '@/hooks/useColors.ts';
-import {Home, Menu} from 'lucide-react-native';
+import {GraduationCap, Plus, User, Zap} from 'lucide-react-native';
 import {AppText} from "@/components/ui";
 import {useTranslation} from "react-i18next";
-
-const {width: screenWidth} = Dimensions.get('window');
 
 interface TabIconProps {
   name: string;
@@ -16,12 +14,16 @@ interface TabIconProps {
 
 const TabIcon: React.FC<TabIconProps> = ({name, color, size}) => {
   switch (name) {
-    case 'HOME':
-      return <Home size={size} color={color} fill={color}/>;
-    case 'MORE':
-      return <Menu size={size} color={color} fill={color}/>;
+    case 'Learn':
+      return <GraduationCap size={size} color={color}/>;
+    case 'Create':
+      return <Plus size={size} color={color}/>;
+    case 'Challenge':
+      return <Zap size={size} color={color}/>;
+    case 'Profile':
+      return <User size={size} color={color}/>;
     default:
-      return <Home size={size} color={color} fill={color}/>;
+      return <GraduationCap size={size} color={color}/>;
   }
 };
 

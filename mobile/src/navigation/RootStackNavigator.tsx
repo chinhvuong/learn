@@ -2,6 +2,8 @@ import React from "react";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {RootStackParamList} from "./types";
 import MainTabNavigator from "./MainTabNavigator";
+import OnboardingStackNavigator from "./OnboardingStackNavigator";
+import LessonPlayerScreen from "@/screens/lesson/LessonPlayerScreen.tsx";
 import SettingsScreen from "@/screens/SettingsScreen";
 import ComponentsDemo from "@/screens/ComponentsDemo";
 import DesignSystemScreen from "@/screens/DesignSystemScreen";
@@ -25,15 +27,31 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootStackNavigator() {
   return (
     <Stack.Navigator
+      initialRouteName="Onboarding"
       screenOptions={{
         header: (props) => <CustomScreenHeader {...props} />,
       }}
     >
       <Stack.Screen
+        name="Onboarding"
+        component={OnboardingStackNavigator}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="Main"
         component={MainTabNavigator}
         options={{
           headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="LessonPlayer"
+        component={LessonPlayerScreen}
+        options={{
+          headerShown: false,
+          presentation: "modal",
         }}
       />
       <Stack.Screen
