@@ -1,5 +1,5 @@
 import React from "react";
-import {View} from "react-native";
+import {Pressable, View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
@@ -8,11 +8,10 @@ import Icon from "@/components/ui/Icon.tsx";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 
 /**
- * Welcome — first onboarding screen (placeholder for now).
- *
- * Exists to anchor the onboarding stack in the navigation skeleton (issue #4).
- * "Bắt đầu" enters the tab shell; the full Welcome → Topics → Reading Level →
- * Golden First Lesson flow is built later.
+ * Welcome — the splash / value-prop, first onboarding screen (screens.md §1,
+ * handoff screen 01). Carries the one-line promise verbatim and opens the
+ * value-before-signup flow: "Bắt đầu" advances to the topic picker (never
+ * straight into the tab shell — the learner experiences value first).
  */
 export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
@@ -20,11 +19,13 @@ export default function WelcomeScreen() {
   const navigation = useNavigation<OnboardingNavigationProp>();
 
   const handleStart = () => {
-    // Replace the onboarding stack with the tab shell so back doesn't return here.
-    navigation.getParent()?.reset({
-      index: 0,
-      routes: [{name: "Main"}],
-    });
+    navigation.navigate("Topics");
+  };
+
+  const handleSignIn = () => {
+    // Existing-account path ("Đã có tài khoản? Đăng nhập"). The full sign-in
+    // screen (handoff 06b) lands here; for now route to the boilerplate Login.
+    navigation.getParent()?.navigate("Login");
   };
 
   return (
@@ -35,13 +36,16 @@ export default function WelcomeScreen() {
       <View className={"flex-1 items-center justify-center"}>
         <View
           className={
-            "w-24 h-24 rounded-3xl bg-neutrals1000 items-center justify-center mb-8"
+            "w-16 h-16 rounded-3xl bg-flow items-center justify-center mb-6"
           }
         >
-          <Icon name={"Sparkles"} className={"text-primary w-12 h-12"}/>
+          <Icon name={"Sparkles"} className={"text-on-flow w-8 h-8"}/>
         </View>
+        <AppText variant={"heading3"} weight={"bold"} align={"center"} className={"mb-1"}>
+          Inflow
+        </AppText>
         <AppText variant={"heading1"} align={"center"}>
-          {t("ONBOARDING_WELCOME_TITLE")}
+          ONBOARDING_WELCOME_TITLE
         </AppText>
         <AppText
           variant={"body"}
@@ -49,16 +53,26 @@ export default function WelcomeScreen() {
           align={"center"}
           className={"mt-3"}
         >
-          {t("ONBOARDING_WELCOME_SUBTITLE")}
+          ONBOARDING_WELCOME_SUBTITLE
         </AppText>
       </View>
-      <AppButton
-        variant={"primary"}
-        className={"w-full rounded-full"}
-        onPress={handleStart}
-      >
-        {t("ONBOARDING_START")}
-      </AppButton>
+      <View className={"w-full"}>
+        <AppButton
+          variant={"primary"}
+          className={"w-full rounded-2xl"}
+          onPress={handleStart}
+        >
+          {t("ONBOARDING_START")}
+        </AppButton>
+        <Pressable className={"mt-4 flex-row justify-center"} onPress={handleSignIn} hitSlop={8}>
+          <AppText variant={"bodySmall"} color={"muted"} raw>
+            {t("ONBOARDING_HAVE_ACCOUNT")}{" "}
+            <AppText variant={"bodySmall"} color={"primary"} weight={"bold"} raw>
+              {t("ONBOARDING_SIGN_IN")}
+            </AppText>
+          </AppText>
+        </Pressable>
+      </View>
     </View>
   );
 }
