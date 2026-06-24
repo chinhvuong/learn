@@ -103,27 +103,33 @@ export default function LessonReadingPlayer({
   return (
     <View
       style={[styles.root, {backgroundColor: colors.appBg, paddingTop: insets.top}]}>
-      {/* Header chrome: close · title · North Star. */}
+      {/* Header chrome: close · title + meta · North Star pill. */}
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('CLOSE')}
           onPress={onClose}
           hitSlop={8}
-          style={styles.closeBtn}>
-          <Icon name="X" className="text-foreground w-6 h-6" />
+          style={[styles.closeBtn, {backgroundColor: colors.surface2}]}>
+          <Icon name="X" className="text-neutrals200 w-4 h-4" />
         </Pressable>
         <View style={styles.headerTitle}>
-          <AppText raw variant="heading5" weight="bold" numberOfLines={1}>
+          <AppText raw style={[styles.titleText, {color: colors.ink}]} numberOfLines={1}>
             {lesson.title}
           </AppText>
-        </View>
-        <View style={styles.northStarWrap}>
-          <NorthStarCounter value={northStarLive} floatKey={session.absorbFloatKey} />
-          <AppText raw style={[styles.northStarLabel, {color: colors.warmInk}]}>
-            {t('LP_NORTH_STAR_LABEL')}
+          <AppText raw style={[styles.titleMeta, {color: colors.ink3}]} numberOfLines={1}>
+            {t('LP_READING_META', {
+              topic: lesson.topic,
+              cefr: lesson.cefr,
+              mode: t('LP_READING_MODE'),
+            })}
           </AppText>
         </View>
+        <NorthStarCounter
+          value={northStarLive}
+          floatKey={session.absorbFloatKey}
+          variant="pill"
+        />
       </View>
 
       {/* Progress: đã quyết N/M. */}
@@ -177,7 +183,7 @@ export default function LessonReadingPlayer({
       {/* Open Item meaning card overlay (the absorption gesture's reveal). */}
       {openItem ? (
         <View
-          style={[styles.cardOverlay, {bottom: 96 + insets.bottom}]}
+          style={[styles.cardOverlay, {bottom: 94 + insets.bottom}]}
           pointerEvents="box-none">
           <ItemMeaningCard
             item={openItem}
@@ -210,11 +216,11 @@ export default function LessonReadingPlayer({
           variant="primary"
           disabled={!allDecided}
           onPress={handleComplete}
-          accessibilityLabel={t('LP_COMPLETE')}>
+          accessibilityLabel={t('LP_TO_QUIZ')}>
           <AppText
             raw
             style={[styles.completeText, {color: colors.onFlow}]}>
-            {t('LP_COMPLETE')}
+            {t('LP_TO_QUIZ')}
           </AppText>
         </AppButton>
       </View>
@@ -231,14 +237,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 10,
   },
-  closeBtn: {paddingRight: 4},
-  headerTitle: {flex: 1, minWidth: 0},
-  northStarWrap: {alignItems: 'center', minWidth: 64},
-  northStarLabel: {
-    fontFamily: InflowFonts.ui.semibold,
-    fontSize: 9.5,
-    marginTop: -2,
+  closeBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  headerTitle: {flex: 1, minWidth: 0},
+  titleText: {fontFamily: InflowFonts.ui.bold, fontSize: 13.5},
+  titleMeta: {fontFamily: InflowFonts.ui.regular, fontSize: 10.5, marginTop: 1},
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,6 +1,7 @@
 import React from "react";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {RootStackParamList} from "./types";
+import {useAppSelector} from "@/store/hooks.ts";
 import MainTabNavigator from "./MainTabNavigator";
 import OnboardingStackNavigator from "./OnboardingStackNavigator";
 import LessonPlayerScreen from "@/screens/lesson/LessonPlayerScreen.tsx";
@@ -25,9 +26,13 @@ import AboutScreen from "@/screens/AboutScreen";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
+  // First run starts at the onboarding flow; once it has been completed (PRD
+  // story 11), launches go straight to the tab shell. `completed` is persisted,
+  // so this survives restarts.
+  const onboardingCompleted = useAppSelector((state) => state.onboarding.completed);
   return (
     <Stack.Navigator
-      initialRouteName="Onboarding"
+      initialRouteName={onboardingCompleted ? "Main" : "Onboarding"}
       screenOptions={{
         header: (props) => <CustomScreenHeader {...props} />,
       }}
