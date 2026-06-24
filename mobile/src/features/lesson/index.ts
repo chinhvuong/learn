@@ -26,8 +26,17 @@ export {
   initialLessonSessionState,
 } from './lessonSessionSlice';
 export type {ItemDecision, LessonSessionState} from './lessonSessionSlice';
+export {default as LessonLoadingView} from './components/LessonLoadingView';
+export {default as LessonCoreIntroPlayer} from './components/LessonCoreIntroPlayer';
 export {default as LessonReadingPlayer} from './components/LessonReadingPlayer';
 export {default as LessonCompleteView} from './components/LessonCompleteView';
 export {default as BilingualPassageView} from './components/BilingualPassageView';
 export {default as ItemMeaningCard} from './components/ItemMeaningCard';
 export {default as NorthStarCounter} from './components/NorthStarCounter';
+export {
+  coreIntroOrder,
+  coreKindCounts,
+  clampCoreIndex,
+  isFirstCore,
+  isLastCore,
+} from './coreIntro';
