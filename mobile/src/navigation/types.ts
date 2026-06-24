@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Main?: NavigatorScreenParams<MainTabParamList>;
   Settings: undefined;
   ComponentsDemo: undefined;
+  DesignSystem: undefined;
   AvatarDemo: undefined;
   BadgeDemo: undefined;
   ChipDemo: undefined;

@@ -4,12 +4,12 @@ import {useNavigation} from "@react-navigation/native";
 import MenuList from "@/components/ui/MenuList.tsx";
 import Icon from "@/components/ui/Icon.tsx";
 import {AppText, Avatar} from "@/components/ui";
-import {useAppSelector} from "@/store/hooks.ts";
+import {useTheme} from "@/hooks/useTheme.ts";
 
 
 const MoreScreen = () => {
   const navigation = useNavigation();
-  const {theme} = useAppSelector(state => state.app);
+  const {preference} = useTheme();
 
   const handleSettings = () => {
     navigation.navigate("Settings");
@@ -54,7 +54,7 @@ const MoreScreen = () => {
               className={"size-22 text-neutrals100"}
             />,
             title: "Theme",
-            value: <AppText className={'capitalize text-neutrals100'}>{theme}</AppText>,
+            value: <AppText className={'capitalize text-neutrals100'} raw>{preference}</AppText>,
             onPress: handleSettings
           },
           {

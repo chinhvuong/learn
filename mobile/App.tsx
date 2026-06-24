@@ -6,11 +6,11 @@ import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {persistor, store} from '@/store';
-import {useAppSelector} from '@/store/hooks';
 import RootStackNavigator from '@/navigation/RootStackNavigator.tsx';
 import LoadingScreen from '@/components/LoadingScreen';
 import {DefaultTheme, NavigationContainer} from "@react-navigation/native";
 import {useColors} from "@/hooks/useColors";
+import {useTheme} from "@/hooks/useTheme";
 import InsetsHelper from "@/components/helpers/InsetsHelper.tsx";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {BottomSheetModalProvider} from "@gorhom/bottom-sheet";
@@ -21,7 +21,7 @@ import {ToastProvider} from "@/components/ui/ToastProvider.tsx";
 
 
 const AppContent: React.FC = () => {
-  const {theme} = useAppSelector(state => state.app);
+  const {theme} = useTheme();
   const colors = useColors();
 
   return (

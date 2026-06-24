@@ -1,9 +1,11 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {colorScheme} from "nativewind";
 import {LanguageCode} from '@/config/i18n';
 import {getDeviceLanguage} from "@/utils/getDeviceLanguage.ts";
 
+/** The resolved appearance actually rendered. */
 export type Theme = 'light' | 'dark';
+/** The learner's theme preference: a fixed appearance, or follow the system. */
+export type ThemePreference = 'light' | 'dark' | 'system';
 
 export interface Insets {
   left: number;
@@ -16,15 +18,26 @@ export interface Insets {
 
 
 interface AppState {
-  theme: Theme;
+  /** Learner preference — may be `system` (follow OS appearance). */
+  themePreference: ThemePreference;
   language: LanguageCode;
   insets: Insets;
   isFirstLaunch: boolean;
   isLoading: boolean;
+  /**
+   * Whether reading tokens show their Item-type encoding (underlines/pills).
+   * Mirrors the handoff's `showAnnotations` flag. Default true.
+   */
+  showAnnotations: boolean;
+  /**
+   * Use the Newsreader serif on the reading surface (vs. the UI sans).
+   * Mirrors the handoff's `readingSerif` flag. Default true.
+   */
+  readingSerif: boolean;
 }
 
 const initialState: AppState = {
-  theme: 'dark',
+  themePreference: 'system',
   language: getDeviceLanguage(),
   insets: {
     left: 0,
@@ -34,14 +47,16 @@ const initialState: AppState = {
   },
   isFirstLaunch: true,
   isLoading: false,
+  showAnnotations: true,
+  readingSerif: true,
 };
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    setTheme: (state, action: PayloadAction<Theme>) => {
-      state.theme = action.payload;
+    setThemePreference: (state, action: PayloadAction<ThemePreference>) => {
+      state.themePreference = action.payload;
     },
     setLanguage: (state, action: PayloadAction<LanguageCode>) => {
       state.language = action.payload;
@@ -55,13 +70,36 @@ const appSlice = createSlice({
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
-    toggleTheme: (state) => {
-      const newTheme = state.theme === 'light' ? 'dark' : 'light';
-      colorScheme.set(newTheme);
-      state.theme = newTheme;
+    setShowAnnotations: (state, action: PayloadAction<boolean>) => {
+      state.showAnnotations = action.payload;
+    },
+    setReadingSerif: (state, action: PayloadAction<boolean>) => {
+      state.readingSerif = action.payload;
+    },
+    /**
+     * Cycle the theme preference light → dark → system → light.
+     * Resolution to an actual appearance (incl. live system following) happens
+     * in `useTheme`, so the OS theme never gets baked into persisted state.
+     */
+    cycleThemePreference: (state) => {
+      state.themePreference =
+        state.themePreference === 'light'
+          ? 'dark'
+          : state.themePreference === 'dark'
+            ? 'system'
+            : 'light';
     },
   },
 });
 
-export const {setTheme, setLanguage, setInsets, setIsFirstLaunch, setIsLoading, toggleTheme} = appSlice.actions;
+export const {
+  setThemePreference,
+  setLanguage,
+  setInsets,
+  setIsFirstLaunch,
+  setIsLoading,
+  setShowAnnotations,
+  setReadingSerif,
+  cycleThemePreference,
+} = appSlice.actions;
 export default appSlice.reducer;
