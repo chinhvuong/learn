@@ -62,5 +62,42 @@
   "DS_CHUNK": "Chunk",
   "DS_GRAMMAR_POINT": "Ngữ pháp",
   "DS_ABSORBED": "Đã nạp",
-  "DS_TAP_TO_ABSORB": "Chạm vào Item để nạp (teal → amber)"
+  "DS_TAP_TO_ABSORB": "Chạm vào Item để nạp (teal → amber)",
+
+  "TAB_LEARN": "Học",
+  "TAB_CREATE": "Tạo",
+  "TAB_CHALLENGE": "Thử thách",
+  "TAB_PROFILE": "Hồ sơ",
+
+  "CONTINUE": "Tiếp tục",
+  "PLACEHOLDER_SOON": "Sắp ra mắt",
+
+  "LEARN_PLACEHOLDER_DESC": "Màn hình chính — tiếp tục dòng chảy học của bạn",
+  "CREATE_PLACEHOLDER_DESC": "Biến nội dung bạn mê thành bài học",
+  "CHALLENGE_PLACEHOLDER_DESC": "Thử thách đọc theo nhịp — sắp ra mắt",
+  "PROFILE_PLACEHOLDER_DESC": "North Star · Trình độ · Streak · Cột mốc",
+
+  "OPEN_LESSON_PLAYER": "Mở trình học bài",
+  "OPEN_ONBOARDING": "Xem luồng khởi động",
+
+  "ONBOARDING_WELCOME_TITLE": "Học tiếng Anh bằng chính nội dung bạn mê",
+  "ONBOARDING_WELCOME_SUBTITLE": "Biến bài viết · video · podcast yêu thích thành bài học",
+  "ONBOARDING_START": "Bắt đầu",
+  "ONBOARDING_SKIP_TO_HOME": "Bỏ qua, vào Học",
+  "ONBOARDING_TOPICS_TITLE": "Bạn thích đọc/nghe về gì?",
+  "ONBOARDING_TOPICS_SUBTITLE": "Chọn ít nhất 3 chủ đề",
+  "ONBOARDING_READING_LEVEL_TITLE": "Trình độ đọc hiểu của bạn?",
+  "ONBOARDING_READING_LEVEL_SUBTITLE": "Yên tâm, app tự nắn theo bạn",
+  "ONBOARDING_GOLDEN_TITLE": "Bài học đầu tiên của bạn",
+  "ONBOARDING_GOLDEN_SUBTITLE": "Một chiến thắng dễ dàng trước khi bắt đầu",
+  "ONBOARDING_RESULT_TITLE": "Bài đầu hoàn thành!",
+  "ONBOARDING_RESULT_SUBTITLE": "Đặt mục tiêu mỗi ngày của bạn",
+  "ONBOARDING_SIGNUP_TITLE": "Lưu tiến độ của bạn",
+  "ONBOARDING_SIGNUP_SUBTITLE": "Bạn vừa nạp Item đầu tiên & mở streak",
+  "ONBOARDING_PUSH_TITLE": "Bật thông báo?",
+  "ONBOARDING_PUSH_SUBTITLE": "Nhắc bạn giữ streak và báo khi bài học đã sẵn sàng",
+  "ONBOARDING_PUSH_CTA": "Bật thông báo",
+
+  "LESSON_PLAYER_TITLE": "Trình học bài",
+  "LESSON_PLAYER_PLACEHOLDER_DESC": "Bề mặt đọc song ngữ và luyện nghe — sắp ra mắt"
 }

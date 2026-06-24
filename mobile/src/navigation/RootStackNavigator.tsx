@@ -2,6 +2,8 @@ import React from "react";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {RootStackParamList} from "./types";
 import MainTabNavigator from "./MainTabNavigator";
+import OnboardingNavigator from "./OnboardingNavigator";
+import LessonPlayerNavigator from "./LessonPlayerNavigator";
 import SettingsScreen from "@/screens/SettingsScreen";
 import ComponentsDemo from "@/screens/ComponentsDemo";
 import DesignSystemScreen from "@/screens/DesignSystemScreen";
@@ -34,6 +36,22 @@ export default function RootStackNavigator() {
         component={MainTabNavigator}
         options={{
           headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="Onboarding"
+        component={OnboardingNavigator}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="LessonPlayer"
+        component={LessonPlayerNavigator}
+        options={{
+          headerShown: false,
+          // Presents the Lesson Player as a modal stack over the tabs.
+          presentation: "modal",
         }}
       />
       <Stack.Screen

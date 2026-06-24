@@ -1,6 +1,5 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {LanguageCode} from '@/config/i18n';
-import {getDeviceLanguage} from "@/utils/getDeviceLanguage.ts";
 
 /** The resolved appearance actually rendered. */
 export type Theme = 'light' | 'dark';
@@ -38,7 +37,9 @@ interface AppState {
 
 const initialState: AppState = {
   themePreference: 'system',
-  language: getDeviceLanguage(),
+  // Inflow's UI is Vietnamese (English appears only as Lesson content), so the
+  // app defaults to Vietnamese rather than the device locale.
+  language: 'vi',
   insets: {
     left: 0,
     top: 0,

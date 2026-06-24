@@ -62,5 +62,42 @@
   "DS_CHUNK": "Chunk",
   "DS_GRAMMAR_POINT": "Grammar Point",
   "DS_ABSORBED": "Absorbed",
-  "DS_TAP_TO_ABSORB": "Tap an Item to absorb it (teal → amber)"
+  "DS_TAP_TO_ABSORB": "Tap an Item to absorb it (teal → amber)",
+
+  "TAB_LEARN": "Learn",
+  "TAB_CREATE": "Create",
+  "TAB_CHALLENGE": "Challenge",
+  "TAB_PROFILE": "Profile",
+
+  "CONTINUE": "Continue",
+  "PLACEHOLDER_SOON": "Coming soon",
+
+  "LEARN_PLACEHOLDER_DESC": "Home — keep your learning in flow",
+  "CREATE_PLACEHOLDER_DESC": "Turn content you love into a Lesson",
+  "CHALLENGE_PLACEHOLDER_DESC": "Paced reading Challenges — coming soon",
+  "PROFILE_PLACEHOLDER_DESC": "North Star · Levels · Streak · Milestones",
+
+  "OPEN_LESSON_PLAYER": "Open Lesson Player",
+  "OPEN_ONBOARDING": "View onboarding flow",
+
+  "ONBOARDING_WELCOME_TITLE": "Learn English through content you love",
+  "ONBOARDING_WELCOME_SUBTITLE": "Turn favourite articles · videos · podcasts into Lessons",
+  "ONBOARDING_START": "Get started",
+  "ONBOARDING_SKIP_TO_HOME": "Skip to Home",
+  "ONBOARDING_TOPICS_TITLE": "What do you like to read/listen to?",
+  "ONBOARDING_TOPICS_SUBTITLE": "Pick at least 3 topics",
+  "ONBOARDING_READING_LEVEL_TITLE": "What is your reading Level?",
+  "ONBOARDING_READING_LEVEL_SUBTITLE": "Don't worry, the app adjusts to you",
+  "ONBOARDING_GOLDEN_TITLE": "Your first Lesson",
+  "ONBOARDING_GOLDEN_SUBTITLE": "An easy win before you begin",
+  "ONBOARDING_RESULT_TITLE": "First Lesson complete!",
+  "ONBOARDING_RESULT_SUBTITLE": "Set your Daily Goal",
+  "ONBOARDING_SIGNUP_TITLE": "Save your progress",
+  "ONBOARDING_SIGNUP_SUBTITLE": "You just absorbed your first Items & opened a streak",
+  "ONBOARDING_PUSH_TITLE": "Turn on notifications?",
+  "ONBOARDING_PUSH_SUBTITLE": "Streak reminders and 'your Lesson is ready' alerts",
+  "ONBOARDING_PUSH_CTA": "Turn on notifications",
+
+  "LESSON_PLAYER_TITLE": "Lesson Player",
+  "LESSON_PLAYER_PLACEHOLDER_DESC": "Bilingual reading and Listening Replay — coming soon"
 }
