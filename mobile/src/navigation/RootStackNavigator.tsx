@@ -4,6 +4,7 @@ import {RootStackParamList} from "./types";
 import MainTabNavigator from "./MainTabNavigator";
 import SettingsScreen from "@/screens/SettingsScreen";
 import ComponentsDemo from "@/screens/ComponentsDemo";
+import DesignSystemScreen from "@/screens/DesignSystemScreen";
 import CustomScreenHeader from "@/navigation/components/ScreenHeader.tsx";
 import AppButtonDemoScreen from "@/screens/demos/AppButtonDemoScreen";
 import AvatarDemoScreen from "@/screens/demos/AvatarDemoScreen";
@@ -47,6 +48,13 @@ export default function RootStackNavigator() {
         component={ComponentsDemo}
         options={{
           title: "Components Demo",
+        }}
+      />
+      <Stack.Screen
+        name="DesignSystem"
+        component={DesignSystemScreen}
+        options={{
+          title: "Design System",
         }}
       />
       <Stack.Screen

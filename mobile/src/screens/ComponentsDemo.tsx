@@ -14,6 +14,14 @@ const ComponentsDemo: React.FC<Props> = () => {
 
   const componentsList = [
     {
+      name: t('DESIGN_SYSTEM'),
+      route: 'DesignSystem' as const,
+      icon: () => <Icon
+        name={'Palette'}
+        className={"size-22 text-neutrals100"}
+      />,
+    },
+    {
       name: 'Button',
       route: 'AppButtonDemo' as const,
       icon: () => <Icon

@@ -20,15 +20,32 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'sans-thin': ['"SourceSans3-Thin"'],
-        'sans-extralight': ['"SourceSans3-ExtraLight"'],
-        'sans-light': ['"SourceSans3-Light"'],
-        'sans-regular': ['"SourceSans3-Regular"'],
-        'sans-medium': ['"SourceSans3-Medium"'],
-        'sans-semibold': ['"SourceSans3-SemiBold"'],
-        'sans-bold': ['"SourceSans3-Bold"'],
-        'sans-extrabold': ['"SourceSans3-ExtraBold"'],
-        'sans-black': ['"SourceSans3-Black"'],
+        // --- Inflow UI typeface: Be Vietnam Pro (UI / headings / numerals) ---
+        // Full Vietnamese support, per the design handoff. The legacy `sans-*`
+        // keys are repointed here so the whole app adopts the Inflow typeface;
+        // weights Be Vietnam Pro doesn't ship are mapped to the nearest one.
+        'sans-thin': ['"BeVietnamPro-Regular"'],
+        'sans-extralight': ['"BeVietnamPro-Regular"'],
+        'sans-light': ['"BeVietnamPro-Regular"'],
+        'sans-regular': ['"BeVietnamPro-Regular"'],
+        'sans-medium': ['"BeVietnamPro-Medium"'],
+        'sans-semibold': ['"BeVietnamPro-SemiBold"'],
+        'sans-bold': ['"BeVietnamPro-Bold"'],
+        'sans-extrabold': ['"BeVietnamPro-ExtraBold"'],
+        'sans-black': ['"BeVietnamPro-ExtraBold"'],
+        // Explicit Inflow UI aliases
+        'ui-regular': ['"BeVietnamPro-Regular"'],
+        'ui-medium': ['"BeVietnamPro-Medium"'],
+        'ui-semibold': ['"BeVietnamPro-SemiBold"'],
+        'ui-bold': ['"BeVietnamPro-Bold"'],
+        'ui-extrabold': ['"BeVietnamPro-ExtraBold"'],
+        // --- Inflow reading surface: Newsreader serif (English lesson text) ---
+        'reading': ['"Newsreader-Regular"'],
+        'reading-regular': ['"Newsreader-Regular"'],
+        'reading-medium': ['"Newsreader-Medium"'],
+        'reading-bold': ['"Newsreader-Bold"'],
+        'reading-italic': ['"Newsreader-Italic"'],
+        'reading-medium-italic': ['"Newsreader-MediumItalic"'],
       },
       fontSize: {
         xs: 12,

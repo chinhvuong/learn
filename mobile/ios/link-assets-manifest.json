@@ -32,6 +32,46 @@
     {
       "path": "assets/fonts/SourceSans3-SemiBold.ttf",
       "sha1": "7a5ca03083f0c8d402d3bd07e2925d7668fc7510"
+    },
+    {
+      "path": "assets/fonts/BeVietnamPro-Regular.ttf",
+      "sha1": "e4fa14cdd3d662b6373e6e8315831a4621df65aa"
+    },
+    {
+      "path": "assets/fonts/BeVietnamPro-Medium.ttf",
+      "sha1": "8d4a0d0439885c5c8618a1bfda45cce62508ea9a"
+    },
+    {
+      "path": "assets/fonts/BeVietnamPro-SemiBold.ttf",
+      "sha1": "a69527c7e5cf1066b2ee6bda77589c8de736f94b"
+    },
+    {
+      "path": "assets/fonts/BeVietnamPro-Bold.ttf",
+      "sha1": "83892f18eae793eb71f72408c699a59a33444c1e"
+    },
+    {
+      "path": "assets/fonts/BeVietnamPro-ExtraBold.ttf",
+      "sha1": "6ccb604f2be147223e807ea1eaf9303e6dd6cc18"
+    },
+    {
+      "path": "assets/fonts/Newsreader-Regular.ttf",
+      "sha1": "518c276724a7f0c37a696a3b5cec37c58c41faac"
+    },
+    {
+      "path": "assets/fonts/Newsreader-Medium.ttf",
+      "sha1": "ed055247023911522bd87ad052e948548618a69c"
+    },
+    {
+      "path": "assets/fonts/Newsreader-Bold.ttf",
+      "sha1": "a7844d378013c1fe503aa43aad2b7da0ced54d9c"
+    },
+    {
+      "path": "assets/fonts/Newsreader-Italic.ttf",
+      "sha1": "e7e0a54f35f60700b8a73af7aab70a491bd46d44"
+    },
+    {
+      "path": "assets/fonts/Newsreader-MediumItalic.ttf",
+      "sha1": "cd5638e64c9a6801380f1545e80f0073900537f8"
     }
   ]
 }

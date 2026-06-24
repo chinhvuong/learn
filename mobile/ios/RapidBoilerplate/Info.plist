@@ -59,6 +59,16 @@
 		<string>SourceSans3-Medium.ttf</string>
 		<string>SourceSans3-Regular.ttf</string>
 		<string>SourceSans3-SemiBold.ttf</string>
+		<string>BeVietnamPro-Regular.ttf</string>
+		<string>BeVietnamPro-Medium.ttf</string>
+		<string>BeVietnamPro-SemiBold.ttf</string>
+		<string>BeVietnamPro-Bold.ttf</string>
+		<string>BeVietnamPro-ExtraBold.ttf</string>
+		<string>Newsreader-Regular.ttf</string>
+		<string>Newsreader-Medium.ttf</string>
+		<string>Newsreader-Bold.ttf</string>
+		<string>Newsreader-Italic.ttf</string>
+		<string>Newsreader-MediumItalic.ttf</string>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>

@@ -1,8 +1,12 @@
 import {AppColors, AppColorsLight} from "../config/colors.ts";
-import {useAppSelector} from "@/store/hooks.ts";
+import {useTheme} from "@/hooks/useTheme.ts";
 
+/**
+ * Returns the active Inflow token set (light or dark), resolved from the
+ * learner's theme preference (incl. live `system` following).
+ */
 export function useColors() {
-  const {theme} = useAppSelector(state => state.app);
+  const {theme} = useTheme();
   if (theme === 'light') return AppColorsLight;
   return AppColors;
 }
