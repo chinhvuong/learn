@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {AppButton, AppText} from '@/components/ui';
@@ -76,10 +76,24 @@ export default function LessonCompleteView({
     skill === 'listening' ? 'LP_COMPLETE_SKILL_LISTENING' : 'LP_COMPLETE_SKILL_READING',
   );
 
+  // North Star count-up (handoff `lpCountUp` — 1228 → 1234 on the recap): seed
+  // the hero counter at the pre-Lesson base, then advance to the live total on
+  // mount so NorthStarCounter ticks it up (it animates on `value` change).
+  const [nsValue, setNsValue] = useState(northStarBase);
+  useEffect(() => {
+    setNsValue(northStarLive);
+  }, [northStarLive]);
+
   return (
     <ScrollView
       style={{backgroundColor: colors.appBg}}
       contentContainerStyle={styles.content}>
+      {/* Today's goal met — warm celebration pill (handoff completion top). */}
+      <View style={[styles.goalPill, {backgroundColor: colors.warmSoft}]}>
+        <AppText raw style={[styles.goalPillText, {color: colors.warmInk}]}>
+          {t('LP_COMPLETE_GOAL_MET')}
+        </AppText>
+      </View>
       <AppText raw style={styles.emoji}>
         🎉
       </AppText>
@@ -127,15 +141,26 @@ export default function LessonCompleteView({
         </View>
       </View>
 
-      {/* North Star count-up (reuses NorthStarCounter — fires on mount). */}
-      <View style={[styles.northStarCard, {backgroundColor: colors.warmSoft}]}>
-        <AppText raw style={[styles.northStarLabel, {color: colors.warmInk}]}>
+      {/* North Star recap card — uppercase label, the hero count-up (animates
+          base → live on mount), a teal cumulative-delta line, and a warm
+          streak pill (handoff §11 completion card). */}
+      <View
+        style={[
+          styles.northStarCard,
+          {backgroundColor: colors.surface, borderColor: colors.hair},
+        ]}>
+        <AppText raw style={[styles.northStarLabel, {color: colors.ink3}]}>
           {t('LP_COMPLETE_NORTH_STAR_LABEL')}
         </AppText>
-        <NorthStarCounter value={northStarLive} floatKey={0} />
-        <AppText raw style={[styles.delta, {color: colors.warmInk}]}>
+        <NorthStarCounter value={nsValue} floatKey={0} />
+        <AppText raw style={[styles.delta, {color: colors.flowInk}]}>
           {t('LP_COMPLETE_DELTA', {count: northStarLive - northStarBase})}
         </AppText>
+        <View style={[styles.streakPill, {backgroundColor: colors.warmSoft}]}>
+          <AppText raw style={[styles.streakPillText, {color: colors.warmInk}]}>
+            {t('LP_COMPLETE_STREAK', {count: 12})}
+          </AppText>
+        </View>
       </View>
 
       {/* One-tap Continue (recommendation handoff stubbed — wired in #3). */}
@@ -192,6 +217,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 48,
   },
+  goalPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  goalPillText: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
   emoji: {fontSize: 40, marginBottom: 8},
   recap: {fontFamily: InflowFonts.ui.semibold, fontSize: 13.5, marginTop: 6},
   statsRow: {
@@ -227,9 +259,10 @@ const styles = StyleSheet.create({
   northStarCard: {
     alignSelf: 'stretch',
     alignItems: 'center',
-    borderRadius: 22,
+    borderRadius: 20,
+    borderWidth: 1,
     paddingVertical: 22,
-    paddingHorizontal: 40,
+    paddingHorizontal: 22,
     marginTop: 18,
   },
   northStarLabel: {
@@ -237,9 +270,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   delta: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5, marginTop: 8},
+  streakPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 9,
+    marginTop: 12,
+  },
+  streakPillText: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
   cta: {alignSelf: 'stretch', marginTop: 24},
   ctaText: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
   discovery: {alignSelf: 'stretch', marginTop: 28},

@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
-import {AppButton, AppText, Icon, ProgressBar} from '@/components/ui';
+import {AppButton, AppText, ProgressBar} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
 import {InflowFonts} from '@/config/typography';
 import type {QuizQuestion, QuizQuestionType} from '../types';
@@ -138,50 +138,54 @@ export default function LessonComprehensionQuiz({
         styles.root,
         {backgroundColor: colors.appBg, paddingTop: insets.top},
       ]}>
-      {/* Header chrome: close · title. */}
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('CLOSE')}
-          onPress={onClose}
-          hitSlop={8}
-          style={styles.closeBtn}>
-          <Icon name="X" className="text-foreground w-6 h-6" />
-        </Pressable>
-        <View style={styles.headerTitle}>
-          <AppText raw variant="heading5" weight="bold" numberOfLines={1}>
-            {lessonTitle}
-          </AppText>
-        </View>
-        {!done ? (
-          <View style={[styles.countPill, {backgroundColor: colors.flowSoft}]}>
-            <AppText raw style={[styles.countPillText, {color: colors.flowInk}]}>
-              {t('LP_QUIZ_COUNT', {num: index + 1, total})}
+      {/* Header chrome: close (surface-2 square) · title + subtitle · count.
+          Progress bar (answered / total) sits under the same hairline. */}
+      <View style={[styles.header, {borderBottomColor: colors.hair}]}>
+        <View style={styles.headerRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('CLOSE')}
+            onPress={onClose}
+            hitSlop={8}
+            style={[styles.closeBtn, {backgroundColor: colors.surface2}]}>
+            <AppText raw style={[styles.closeBtnIcon, {color: colors.ink2}]}>
+              ✕
+            </AppText>
+          </Pressable>
+          <View style={styles.headerTitle}>
+            <AppText
+              raw
+              numberOfLines={1}
+              style={[styles.cardTitle, {color: colors.ink}]}>
+              {t('LP_QUIZ_TITLE')}
+            </AppText>
+            <AppText
+              raw
+              numberOfLines={1}
+              style={[styles.cardSubtitle, {color: colors.ink3}]}>
+              {t('LP_QUIZ_SUBTITLE')}
             </AppText>
           </View>
-        ) : (
-          <View style={styles.countPillSpacer} />
-        )}
-      </View>
-
-      {/* Quiz card title row. */}
-      <View style={styles.cardTitleRow}>
-        <View style={[styles.cardIcon, {backgroundColor: colors.flowSoft}]}>
-          <Icon name="BookOpenText" className="text-primary w-4 h-4" />
+          {!done ? (
+            <View style={[styles.countPill, {backgroundColor: colors.flowSoft}]}>
+              <AppText
+                raw
+                style={[styles.countPillText, {color: colors.flowInk}]}>
+                {t('LP_QUIZ_COUNT', {num: index + 1, total})}
+              </AppText>
+            </View>
+          ) : (
+            <View style={styles.countPillSpacer} />
+          )}
         </View>
-        <View style={styles.cardTitleText}>
-          <AppText raw style={styles.cardTitle}>
-            {t('LP_QUIZ_TITLE')}
-          </AppText>
-          <AppText raw style={[styles.cardSubtitle, {color: colors.ink3}]}>
-            {t('LP_QUIZ_SUBTITLE')}
-          </AppText>
-        </View>
-      </View>
 
-      {/* Progress bar — answered / total. */}
-      <View style={styles.progressRow}>
-        <ProgressBar value={progressPct} />
+        {/* Progress bar — answered / total (teal fill on a surface-2 track). */}
+        <ProgressBar
+          value={progressPct}
+          variant="primary"
+          size="sm"
+          trackClassName="bg-neutrals900"
+        />
       </View>
 
       <ScrollView
@@ -257,10 +261,12 @@ export default function LessonComprehensionQuiz({
         ) : (
           /* Done state — bài học hoàn thành (no debt badge). */
           <View style={styles.doneWrap}>
-            <AppText raw style={styles.doneEmoji}>
-              ✓
-            </AppText>
-            <AppText raw style={styles.doneScore}>
+            <View style={[styles.doneBadge, {backgroundColor: colors.warmSoft}]}>
+              <AppText raw style={[styles.doneBadgeIcon, {color: colors.warmInk}]}>
+                ✦
+              </AppText>
+            </View>
+            <AppText raw style={[styles.doneScore, {color: colors.ink}]}>
               {t('LP_QUIZ_SCORE', {
                 score: quizScore(questions, answers),
                 total,
@@ -288,11 +294,9 @@ export default function LessonComprehensionQuiz({
             variant="primary"
             disabled={!answered}
             onPress={next}
-            accessibilityLabel={
-              index + 1 >= total ? t('LP_QUIZ_FINISH') : t('LP_QUIZ_NEXT')
-            }>
+            accessibilityLabel={t('LP_QUIZ_NEXT')}>
             <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
-              {index + 1 >= total ? t('LP_QUIZ_FINISH') : t('LP_QUIZ_NEXT')}
+              {t('LP_QUIZ_NEXT')}
             </AppText>
           </AppButton>
         ) : (
@@ -316,13 +320,25 @@ export {countAnswered};
 const styles = StyleSheet.create({
   root: {flex: 1},
   header: {
+    paddingHorizontal: 22,
+    paddingTop: 6,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    gap: 11,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 10,
+    gap: 11,
   },
-  closeBtn: {paddingRight: 4},
+  closeBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeBtnIcon: {fontFamily: InflowFonts.ui.semibold, fontSize: 15},
   headerTitle: {flex: 1, minWidth: 0},
   countPill: {
     paddingHorizontal: 10,
@@ -331,25 +347,8 @@ const styles = StyleSheet.create({
   },
   countPillText: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
   countPillSpacer: {minWidth: 28},
-  cardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 22,
-    paddingTop: 4,
-    paddingBottom: 12,
-  },
-  cardIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardTitleText: {flex: 1, minWidth: 0},
   cardTitle: {fontFamily: InflowFonts.ui.bold, fontSize: 13.5},
   cardSubtitle: {fontFamily: InflowFonts.ui.regular, fontSize: 10.5, marginTop: 1},
-  progressRow: {paddingHorizontal: 22, marginBottom: 4},
   scroll: {flex: 1},
   scrollContent: {paddingHorizontal: 22, paddingTop: 14, paddingBottom: 32},
   typeChip: {
@@ -401,7 +400,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   doneWrap: {alignItems: 'center', paddingTop: 24},
-  doneEmoji: {fontSize: 34, marginBottom: 10},
+  doneBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  doneBadgeIcon: {fontSize: 28},
   doneScore: {
     fontFamily: InflowFonts.ui.extrabold,
     fontSize: 22,
