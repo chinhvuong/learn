@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
-import {AppButton, AppText, Icon, Switch} from '@/components/ui';
+import {AppButton, AppText, Icon} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
 import {InflowFonts} from '@/config/typography';
 import {useAppDispatch, useAppSelector} from '@/store/hooks';
@@ -45,13 +45,14 @@ export interface LessonListeningPlayerProps {
  * layered on the common core for audio Sources (ADR-0002).
  *
  * The transcript is **hidden by default** — the learner hears each sentence
- * first (real listening, not reading-along). Controls: play/pause, slow mode
- * ("🐢 chậm"), reveal-transcript ("Hiện lời"), prev/next sentence, and replay an
- * individual Item's audio span via the shared-layer timestamps. Once revealed,
- * the transcript carries the *same* tappable-Item absorption flow as Reading
- * (tap = reveal meaning + mark Absorbed + North Star +1) and a per-sentence
- * translation toggle. An optional **karaoke (read-along)** toggle keeps the
- * text visible as a gentler on-ramp for beginners.
+ * first (real listening, not reading-along). The "now playing" orb anchors the
+ * surface; controls sit in a transport bar (⏮ · 🐢 chậm · ↻ nghe lại · 👀
+ * karaoke · ⏭). "Hiện lời" reveals the current sentence, which then carries the
+ * *same* tappable-Item absorption flow as Reading (tap = reveal meaning + mark
+ * Absorbed + North Star +1) plus a per-sentence translation toggle ("🌐 dịch")
+ * and a per-Item audio-span replay ("↻ Nghe lại riêng …", driven by the
+ * shared-layer Item timestamps). The optional **karaoke (read-along)** toggle
+ * keeps the text visible as a gentler on-ramp for beginners.
  *
  * This component does not alter Reading behavior; it reuses the same session
  * reducer for the absorption gesture and is selected by Source type (presence
@@ -113,6 +114,8 @@ export default function LessonListeningPlayer({
 
   const currentIndex = audioState.currentSentenceIndex;
   const currentSentence = sentences[currentIndex];
+  const progressPct =
+    sentences.length === 0 ? 0 : ((currentIndex + 1) / sentences.length) * 100;
 
   const handleComplete = () => {
     dispatch(completeSession());
@@ -125,52 +128,94 @@ export default function LessonListeningPlayer({
         styles.root,
         {backgroundColor: colors.appBg, paddingTop: insets.top},
       ]}>
-      {/* Header chrome: close · Source label · North Star. */}
+      {/* Header chrome: close · Source title + meta · North Star pill. */}
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('CLOSE')}
           onPress={onClose}
           hitSlop={8}
-          style={styles.closeBtn}>
-          <Icon name="X" className="text-foreground w-6 h-6" />
+          style={[styles.closeBtn, {backgroundColor: colors.surface2}]}>
+          <Icon name="X" className="text-neutrals200 w-4 h-4" />
         </Pressable>
         <View style={styles.headerTitle}>
-          <AppText raw variant="heading5" weight="bold" numberOfLines={1}>
+          <AppText
+            raw
+            style={[styles.titleText, {color: colors.ink}]}
+            numberOfLines={1}>
             {audio.sourceLabel}
           </AppText>
+          <AppText
+            raw
+            style={[styles.titleMeta, {color: colors.ink3}]}
+            numberOfLines={1}>
+            {t('LP_LISTEN_META', {source: lesson.topic, cefr: lesson.cefr})}
+          </AppText>
         </View>
-        <View style={styles.northStarWrap}>
-          <NorthStarCounter
-            value={northStarLive}
-            floatKey={session.absorbFloatKey}
+        <NorthStarCounter
+          value={northStarLive}
+          floatKey={session.absorbFloatKey}
+          variant="pill"
+        />
+      </View>
+
+      {/* Progress bar + the current sentence-position pill (câu N/M). */}
+      <View style={styles.progressRow}>
+        <View style={[styles.progressTrack, {backgroundColor: colors.surface2}]}>
+          <View
+            style={[
+              styles.progressFill,
+              {width: `${progressPct}%`, backgroundColor: colors.flow},
+            ]}
           />
-          <AppText raw style={[styles.northStarLabel, {color: colors.warmInk}]}>
-            {t('LP_NORTH_STAR_LABEL')}
+        </View>
+        <View style={[styles.sentencePill, {backgroundColor: colors.flowSoft}]}>
+          <AppText raw style={[styles.sentencePillText, {color: colors.flowInk}]}>
+            {t('LP_LISTEN_SENTENCE_PILL', {
+              current: currentIndex + 1,
+              total: sentences.length,
+            })}
           </AppText>
         </View>
       </View>
 
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={styles.bodyContent}>
-        {/* The "now playing" orb + sentence position. */}
-        <View
-          style={[
-            styles.orb,
-            {
-              backgroundColor: audioState.playing
-                ? colors.flowSoft
-                : colors.surface2,
-              borderColor: colors.flow,
-            },
-          ]}>
-          <Icon
-            name={audioState.playing ? 'AudioLines' : 'Headphones'}
-            className="text-primary w-9 h-9"
+      <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
+        {/* The "now playing" orb — concentric flow rings + gradient core. */}
+        <View style={styles.orbWrap}>
+          <View style={[styles.orbRing, {borderColor: colors.flow}]} />
+          <View
+            style={[
+              styles.orbRing,
+              styles.orbRingInner,
+              {borderColor: colors.flow},
+            ]}
           />
+          <View
+            style={[
+              styles.orbCore,
+              {
+                backgroundColor: audioState.playing
+                  ? colors.flow
+                  : colors.flowPress,
+              },
+            ]}>
+            <Icon
+              name={audioState.playing ? 'AudioLines' : 'Headphones'}
+              className="text-onFlow w-8 h-8"
+            />
+          </View>
         </View>
-        <AppText raw style={[styles.position, {color: colors.ink3}]}>
+
+        {/* Slow-mode badge (🐢 0.7× — chậm lại), only while slowed. */}
+        {audioState.slow ? (
+          <View style={[styles.slowBadge, {backgroundColor: colors.warmSoft}]}>
+            <AppText raw style={[styles.slowBadgeText, {color: colors.warmInk}]}>
+              {t('LP_LISTEN_SLOW_BADGE')}
+            </AppText>
+          </View>
+        ) : null}
+
+        <AppText raw style={[styles.position, {color: colors.ink2}]}>
           {t('LR_SENTENCE_PROGRESS', {
             current: currentIndex + 1,
             total: sentences.length,
@@ -184,9 +229,12 @@ export default function LessonListeningPlayer({
               styles.transcriptBox,
               {backgroundColor: colors.surface, borderColor: colors.hair},
             ]}>
-            <View style={styles.transcriptHeaderRow}>
-              {currentSentence ? (
-                <Pressable
+            {/* The current sentence, Items tappable (same absorption flow),
+                led by the per-sentence VI translation badge. */}
+            {currentSentence ? (
+              <AppText raw style={styles.transcript}>
+                <AppText
+                  raw
                   accessibilityRole="button"
                   accessibilityLabel={t('LR_TRANSLATE_SENTENCE')}
                   onPress={() =>
@@ -197,21 +245,11 @@ export default function LessonListeningPlayer({
                     )
                   }
                   style={[
-                    styles.translateBadge,
-                    {backgroundColor: colors.flowSoft},
+                    styles.viBadge,
+                    {color: colors.flowInk, backgroundColor: colors.flowSoft},
                   ]}>
-                  <AppText
-                    raw
-                    style={[styles.translateBadgeText, {color: colors.flowInk}]}>
-                    {t('LR_TRANSLATE_SENTENCE')}
-                  </AppText>
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* The current sentence, Items tappable (same absorption flow). */}
-            {currentSentence ? (
-              <AppText raw style={styles.transcript}>
+                  VI{' '}
+                </AppText>
                 {currentSentence.spans.map((span, spanIdx) => {
                   if (span.kind === 'text') {
                     return (
@@ -259,54 +297,95 @@ export default function LessonListeningPlayer({
               </AppText>
             ) : null}
 
-            {/* Replay an individual Item's audio span (Item timestamps). */}
-            {currentSentence
-              ? currentSentence.spans
-                  .filter(span => span.kind === 'item')
-                  .map(span => {
-                    const itemSpan = span as {kind: 'item'; itemId: string};
-                    const item = itemsById[itemSpan.itemId];
-                    const hasTimestamp = audio.itemTimestamps.some(
-                      ts => ts.itemId === itemSpan.itemId,
-                    );
-                    if (!item || !hasTimestamp) return null;
-                    const replaying =
-                      audioState.replayingItemId === itemSpan.itemId;
-                    return (
-                      <Pressable
-                        key={itemSpan.itemId}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('LR_REPLAY_ITEM', {
-                          headword: item.headword,
-                        })}
-                        onPress={() => audioState.replayItem(itemSpan.itemId)}
-                        style={styles.replayItemRow}>
-                        <Icon
-                          name="RotateCcw"
-                          className={
-                            replaying
-                              ? 'text-warm w-4 h-4'
-                              : 'text-primary w-4 h-4'
+            {/* Sentence actions: 🌐 dịch + per-Item audio-span replay. */}
+            <View style={styles.transcriptActions}>
+              {currentSentence ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('LR_TRANSLATE_SENTENCE')}
+                  onPress={() =>
+                    dispatch(
+                      toggleSentenceTranslation({
+                        sentenceId: currentSentence.id,
+                      }),
+                    )
+                  }
+                  style={[
+                    styles.actionBtn,
+                    {borderColor: colors.hair, backgroundColor: colors.surface},
+                  ]}>
+                  <Icon name="Languages" className="text-ink2 w-4 h-4" />
+                  <AppText
+                    raw
+                    style={[styles.actionBtnText, {color: colors.ink2}]}>
+                    {t('LR_TRANSLATE_SENTENCE')}
+                  </AppText>
+                </Pressable>
+              ) : null}
+
+              {currentSentence
+                ? currentSentence.spans
+                    .filter(span => span.kind === 'item')
+                    .map(span => {
+                      const itemSpan = span as {kind: 'item'; itemId: string};
+                      const item = itemsById[itemSpan.itemId];
+                      const hasTimestamp = audio.itemTimestamps.some(
+                        ts => ts.itemId === itemSpan.itemId,
+                      );
+                      if (!item || !hasTimestamp) return null;
+                      const replaying =
+                        audioState.replayingItemId === itemSpan.itemId;
+                      return (
+                        <Pressable
+                          key={itemSpan.itemId}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('LR_REPLAY_ITEM', {
+                            headword: item.headword,
+                          })}
+                          onPress={() =>
+                            audioState.replayItem(itemSpan.itemId)
                           }
-                        />
-                        <AppText
-                          raw
                           style={[
-                            styles.replayItemText,
-                            {color: replaying ? colors.warmInk : colors.flowInk},
+                            styles.actionBtn,
+                            {
+                              borderColor: replaying
+                                ? colors.warm
+                                : colors.hair,
+                              backgroundColor: replaying
+                                ? colors.warmSoft
+                                : colors.surface,
+                            },
                           ]}>
-                          {t('LR_REPLAY_ITEM', {headword: item.headword})}
-                        </AppText>
-                      </Pressable>
-                    );
-                  })
-              : null}
+                          <Icon
+                            name="RotateCcw"
+                            className={
+                              replaying
+                                ? 'text-warm w-4 h-4'
+                                : 'text-ink2 w-4 h-4'
+                            }
+                          />
+                          <AppText
+                            raw
+                            style={[
+                              styles.actionBtnText,
+                              {
+                                color: replaying ? colors.warmInk : colors.ink2,
+                              },
+                            ]}
+                            numberOfLines={1}>
+                            {t('LR_REPLAY_ITEM', {headword: item.headword})}
+                          </AppText>
+                        </Pressable>
+                      );
+                    })
+                : null}
+            </View>
           </View>
         ) : (
           <View
             style={[
               styles.hiddenBox,
-              {backgroundColor: colors.surface2, borderColor: colors.hair},
+              {backgroundColor: colors.surface, borderColor: colors.hair},
             ]}>
             <AppText raw style={[styles.hiddenHint, {color: colors.ink3}]}>
               ◌ {t('LR_HIDDEN_HINT')}
@@ -315,114 +394,27 @@ export default function LessonListeningPlayer({
               accessibilityRole="button"
               accessibilityLabel={t('LR_REVEAL_TEXT')}
               onPress={() => setTextRevealed(true)}
-              style={[styles.revealBtn, {backgroundColor: colors.flowSoft}]}>
-              <Icon name="Eye" className="text-flowInk w-4 h-4" />
-              <AppText raw style={[styles.revealText, {color: colors.flowInk}]}>
+              style={[styles.revealBtn, {backgroundColor: colors.flow}]}>
+              <Icon name="Eye" className="text-onFlow w-4 h-4" />
+              <AppText raw style={[styles.revealText, {color: colors.onFlow}]}>
                 {t('LR_REVEAL_TEXT')}
               </AppText>
             </Pressable>
           </View>
         )}
-
-        {/* Transport controls: ⏮ · 🐢 chậm · ⏯ · ↻ nghe lại · ⏭. */}
-        <View style={styles.controlsRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('LR_PREV_SENTENCE')}
-            onPress={audioState.prevSentence}
-            hitSlop={8}
-            style={styles.ctrlBtn}>
-            <Icon name="SkipBack" className="text-foreground w-6 h-6" />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{selected: audioState.slow}}
-            accessibilityLabel={t('LR_SLOW')}
-            onPress={audioState.toggleSlow}
-            style={[
-              styles.slowBtn,
-              {
-                backgroundColor: audioState.slow
-                  ? colors.flowSoft
-                  : colors.surface2,
-              },
-            ]}>
-            <Icon
-              name="Rabbit"
-              className={
-                audioState.slow ? 'text-flowInk w-4 h-4' : 'text-ink2 w-4 h-4'
-              }
-            />
-            <AppText
-              raw
-              style={[
-                styles.slowText,
-                {color: audioState.slow ? colors.flowInk : colors.ink2},
-              ]}>
-              {t('LR_SLOW')}
-            </AppText>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              audioState.playing ? t('LR_PAUSE') : t('LR_PLAY')
-            }
-            onPress={audioState.togglePlay}
-            style={[styles.playBtn, {backgroundColor: colors.flow}]}>
-            <Icon
-              name={audioState.playing ? 'Pause' : 'Play'}
-              className="text-onFlow w-7 h-7"
-            />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('LR_REPLAY_SENTENCE')}
-            onPress={() => audioState.playSentence(currentIndex)}
-            style={[styles.slowBtn, {backgroundColor: colors.surface2}]}>
-            <Icon name="RotateCcw" className="text-ink2 w-4 h-4" />
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('LR_NEXT_SENTENCE')}
-            onPress={audioState.nextSentence}
-            hitSlop={8}
-            style={styles.ctrlBtn}>
-            <Icon name="SkipForward" className="text-foreground w-6 h-6" />
-          </Pressable>
-        </View>
-
-        {/* Karaoke (read-along) toggle — beginner on-ramp. */}
-        <View
-          style={[
-            styles.karaokeRow,
-            {borderColor: colors.hair, backgroundColor: colors.surface},
-          ]}>
-          <AppText raw style={[styles.karaokeLabel, {color: colors.ink2}]}>
-            {t('LR_KARAOKE')}
-          </AppText>
-          <Switch
-            value={karaoke}
-            onValueChange={setKaraoke}
-            size="sm"
-            trackClassName={karaoke ? 'bg-flow' : undefined}
-          />
-        </View>
       </ScrollView>
 
       {/* Open Item meaning card overlay (the absorption gesture's reveal). */}
       {openItem ? (
         <View
-          style={[styles.cardOverlay, {bottom: 96 + insets.bottom}]}
+          style={[styles.cardOverlay, {bottom: 150 + insets.bottom}]}
           pointerEvents="box-none">
           <ItemMeaningCard item={openItem} onClose={() => dispatch(closeCard())} />
         </View>
       ) : null}
 
-      {/* Footer: progress + Complete (gated on all Items decided). */}
+      {/* Footer: transport bar (⏮ · 🐢 chậm · ↻ nghe lại · 👀 karaoke · ⏭)
+          + progress + Complete (gated on all Items decided). */}
       <View
         style={[
           styles.footer,
@@ -432,12 +424,88 @@ export default function LessonListeningPlayer({
             paddingBottom: 14 + insets.bottom,
           },
         ]}>
+        <View style={styles.transportRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('LR_PREV_SENTENCE')}
+            onPress={audioState.prevSentence}
+            style={[styles.roundBtn, {backgroundColor: colors.surface2}]}>
+            <Icon name="SkipBack" className="text-ink2 w-5 h-5" />
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{selected: audioState.slow}}
+            accessibilityLabel={t('LR_SLOW')}
+            onPress={audioState.toggleSlow}
+            style={styles.labelCtrl}>
+            <Icon
+              name="Rabbit"
+              className={
+                audioState.slow ? 'text-flowInk w-6 h-6' : 'text-ink2 w-6 h-6'
+              }
+            />
+            <AppText
+              raw
+              style={[
+                styles.ctrlLabel,
+                {color: audioState.slow ? colors.flowInk : colors.ink2},
+              ]}>
+              {t('LR_SLOW')}
+            </AppText>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={audioState.playing ? t('LR_PAUSE') : t('LR_PLAY')}
+            onPress={audioState.togglePlay}
+            style={styles.bigCtrl}>
+            <View
+              style={[styles.bigCtrlCircle, {backgroundColor: colors.flowSoft}]}>
+              <Icon
+                name={audioState.playing ? 'Pause' : 'Play'}
+                className="text-flowInk w-6 h-6"
+              />
+            </View>
+            <AppText raw style={[styles.ctrlLabel, {color: colors.flowInk}]}>
+              {t('LP_LISTEN_REPLAY')}
+            </AppText>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{selected: karaoke}}
+            accessibilityLabel={t('LR_KARAOKE')}
+            onPress={() => setKaraoke(prev => !prev)}
+            style={styles.labelCtrl}>
+            <Icon
+              name="Eye"
+              className={karaoke ? 'text-flowInk w-6 h-6' : 'text-ink2 w-6 h-6'}
+            />
+            <AppText
+              raw
+              style={[
+                styles.ctrlLabel,
+                {color: karaoke ? colors.flowInk : colors.ink2},
+              ]}>
+              {t('LP_LISTEN_KARAOKE')}
+            </AppText>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('LR_NEXT_SENTENCE')}
+            onPress={audioState.nextSentence}
+            style={[styles.roundBtn, {backgroundColor: colors.surface2}]}>
+            <Icon name="SkipForward" className="text-ink2 w-5 h-5" />
+          </Pressable>
+        </View>
+
         <AppText raw style={[styles.progressText, {color: colors.ink3}]}>
           {t('LP_DECIDED_PROGRESS', {decided: decidedCount, total})}
         </AppText>
         <AppButton
           variant="primary"
-          className="flex-1"
           disabled={!allDecided}
           onPress={handleComplete}
           accessibilityLabel={t('LP_COMPLETE')}>
@@ -459,59 +527,109 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 10,
   },
-  closeBtn: {paddingRight: 4},
-  headerTitle: {flex: 1, minWidth: 0},
-  northStarWrap: {alignItems: 'center', minWidth: 64},
-  northStarLabel: {
-    fontFamily: InflowFonts.ui.semibold,
-    fontSize: 9.5,
-    marginTop: -2,
-  },
-  body: {flex: 1},
-  bodyContent: {paddingHorizontal: 22, paddingTop: 14, paddingBottom: 28, alignItems: 'center'},
-  orb: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 2,
+  closeBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
   },
+  headerTitle: {flex: 1, minWidth: 0},
+  titleText: {fontFamily: InflowFonts.ui.bold, fontSize: 13.5},
+  titleMeta: {fontFamily: InflowFonts.ui.regular, fontSize: 10.5, marginTop: 1},
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    paddingHorizontal: 22,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  progressTrack: {flex: 1, height: 6, borderRadius: 4, overflow: 'hidden'},
+  progressFill: {height: '100%', borderRadius: 4},
+  sentencePill: {borderRadius: 9, paddingHorizontal: 9, paddingVertical: 4},
+  sentencePillText: {fontFamily: InflowFonts.ui.bold, fontSize: 11},
+  body: {flex: 1},
+  bodyContent: {
+    paddingHorizontal: 22,
+    paddingTop: 10,
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  orbWrap: {
+    width: 128,
+    height: 128,
+    marginTop: 10,
+    marginBottom: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orbRing: {
+    position: 'absolute',
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    borderWidth: 2,
+    opacity: 0.35,
+  },
+  orbRingInner: {width: 106, height: 106, borderRadius: 53, opacity: 0.5},
+  orbCore: {
+    width: 82,
+    height: 82,
+    borderRadius: 41,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  slowBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginTop: 6,
+  },
+  slowBadgeText: {fontFamily: InflowFonts.ui.bold, fontSize: 11},
   position: {
     fontFamily: InflowFonts.ui.bold,
     fontSize: 13,
-    marginTop: 12,
+    marginTop: 10,
     marginBottom: 16,
   },
   hiddenBox: {
     width: '100%',
-    borderWidth: 1,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
     borderRadius: 16,
-    paddingVertical: 22,
+    paddingVertical: 26,
+    paddingHorizontal: 18,
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   hiddenHint: {fontFamily: InflowFonts.ui.regular, fontSize: 13},
   revealBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 999,
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 13,
   },
-  revealText: {fontFamily: InflowFonts.ui.bold, fontSize: 14},
+  revealText: {fontFamily: InflowFonts.ui.bold, fontSize: 14.5},
   transcriptBox: {
     width: '100%',
     borderWidth: 1,
     borderRadius: 16,
-    padding: 16,
+    padding: 18,
   },
-  transcriptHeaderRow: {flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 6},
-  translateBadge: {borderRadius: 7, paddingHorizontal: 9, paddingVertical: 3},
-  translateBadgeText: {fontFamily: InflowFonts.ui.bold, fontSize: 11},
-  transcript: {fontFamily: InflowFonts.reading.regular, fontSize: 18, lineHeight: 28},
+  viBadge: {
+    fontFamily: InflowFonts.ui.bold,
+    fontSize: 9,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  transcript: {
+    fontFamily: InflowFonts.reading.regular,
+    fontSize: 18,
+    lineHeight: 31,
+  },
   transcriptItem: {
     fontFamily: InflowFonts.reading.medium,
     fontSize: 18,
@@ -525,59 +643,57 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 21,
   },
-  replayItemRow: {
+  transcriptActions: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
+    flexWrap: 'wrap',
+    gap: 9,
     marginTop: 14,
   },
-  replayItemText: {fontFamily: InflowFonts.ui.semibold, fontSize: 13},
-  controlsRow: {
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 14,
-    marginTop: 22,
-  },
-  ctrlBtn: {padding: 4},
-  slowBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 11,
-    height: 38,
-    borderRadius: 999,
-  },
-  slowText: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
-  playBtn: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  karaokeRow: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 6,
     borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginTop: 26,
+    borderRadius: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    maxWidth: '100%',
   },
-  karaokeLabel: {fontFamily: InflowFonts.ui.semibold, fontSize: 13.5},
+  actionBtnText: {fontFamily: InflowFonts.ui.semibold, fontSize: 12.5},
   cardOverlay: {position: 'absolute', left: 14, right: 14},
   footer: {
     paddingHorizontal: 22,
-    paddingTop: 13,
+    paddingTop: 12,
     borderTopWidth: 1,
+    gap: 12,
+  },
+  transportRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    justifyContent: 'space-between',
   },
-  progressText: {fontFamily: InflowFonts.ui.bold, fontSize: 11.5, flexShrink: 0},
+  roundBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  labelCtrl: {alignItems: 'center', gap: 2, minWidth: 46},
+  ctrlLabel: {fontFamily: InflowFonts.ui.semibold, fontSize: 10},
+  bigCtrl: {alignItems: 'center', gap: 2},
+  bigCtrlCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressText: {
+    fontFamily: InflowFonts.ui.bold,
+    fontSize: 11.5,
+    textAlign: 'center',
+  },
   completeText: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
 });
 

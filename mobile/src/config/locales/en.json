@@ -154,5 +154,10 @@
   "LR_NEXT_SENTENCE": "Next sentence",
   "LR_REPLAY_ITEM": "Replay \"{{headword}}\"",
   "LR_TRANSLATE_SENTENCE": "translate",
-  "LR_KARAOKE": "Karaoke (read-along)"
+  "LR_KARAOKE": "Karaoke (read-along)",
+  "LP_LISTEN_META": "{{source}} · {{cefr}} · listen",
+  "LP_LISTEN_SENTENCE_PILL": "sentence {{current}}/{{total}}",
+  "LP_LISTEN_SLOW_BADGE": "🐢 0.7× — slowed",
+  "LP_LISTEN_KARAOKE": "karaoke",
+  "LP_LISTEN_REPLAY": "replay"
 }
