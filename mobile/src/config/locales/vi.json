@@ -154,5 +154,10 @@
   "LR_NEXT_SENTENCE": "Câu sau",
   "LR_REPLAY_ITEM": "Nghe lại riêng \"{{headword}}\"",
   "LR_TRANSLATE_SENTENCE": "dịch",
-  "LR_KARAOKE": "Karaoke (đọc theo)"
+  "LR_KARAOKE": "Karaoke (đọc theo)",
+  "LP_LISTEN_META": "{{source}} · {{cefr}} · nghe",
+  "LP_LISTEN_SENTENCE_PILL": "câu {{current}}/{{total}}",
+  "LP_LISTEN_SLOW_BADGE": "🐢 0.7× — chậm lại",
+  "LP_LISTEN_KARAOKE": "karaoke",
+  "LP_LISTEN_REPLAY": "nghe lại"
 }
