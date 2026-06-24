@@ -1,55 +1,25 @@
-import React from "react";
-import {View} from "react-native";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {useTranslation} from "react-i18next";
-import {useNavigation} from "@react-navigation/native";
-import {AppButton, AppText} from "@/components/ui";
-import Icon from "@/components/ui/Icon.tsx";
-import {RootStackScreenProps} from "@/navigation/types.ts";
+import React from 'react';
+import {useNavigation} from '@react-navigation/native';
+import {HomeView} from '@/features/home';
+import type {HomeLessonRef} from '@/features/home';
+import {RootStackScreenProps} from '@/navigation/types.ts';
 
-type Nav = RootStackScreenProps<"Main">["navigation"];
+type Nav = RootStackScreenProps<'Main'>['navigation'];
 
 /**
- * Học (Home) tab — the root screen on every launch (screens.md §8). Placeholder
- * for now; the real Home (North Star · Daily Goal · Continue · Discover) lands
- * later. The "Continue" button opens the modal Lesson Player so the whole
- * navigation graph is walkable in the skeleton.
+ * Học (Home) tab — the root screen on every launch (screens.md §8).
+ *
+ * The tab screen is thin: it renders the Home feature view and owns routing.
+ * Continue re-enters the learning flow by opening the modal Lesson Player with
+ * the resolved Lesson (the in-progress Lesson if any, else the recommendation),
+ * so the whole navigation graph stays walkable.
  */
 export default function LearnScreen() {
-  const insets = useSafeAreaInsets();
-  const {t} = useTranslation();
   const navigation = useNavigation<Nav>();
 
-  return (
-    <View
-      className={"flex-1 bg-app-bg items-center justify-center px-8"}
-      style={{paddingTop: insets.top, paddingBottom: insets.bottom}}
-    >
-      <View
-        className={
-          "w-20 h-20 rounded-full bg-flow-soft items-center justify-center mb-6"
-        }
-      >
-        <Icon name={"House"} className={"text-flow-ink w-9 h-9"}/>
-      </View>
-      <AppText variant={"heading2"} align={"center"}>
-        {t("TAB_LEARN")}
-      </AppText>
-      <AppText
-        variant={"body"}
-        color={"muted"}
-        align={"center"}
-        className={"mt-2"}
-      >
-        {t("PLACEHOLDER_LEARN")}
-      </AppText>
-      <AppButton
-        variant={"primary"}
-        className={"rounded-full mt-8"}
-        onPress={() => navigation.navigate("LessonPlayer", {})}
-      >
-        {t("HOME_CONTINUE")}
-      </AppButton>
-    </View>
-  );
+  const openLesson = (lesson: HomeLessonRef) => {
+    navigation.navigate('LessonPlayer', {lessonId: lesson.lessonId});
+  };
+
+  return <HomeView onContinue={openLesson} onOpenRecommended={openLesson} />;
 }
