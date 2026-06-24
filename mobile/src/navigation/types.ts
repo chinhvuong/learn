@@ -2,6 +2,7 @@ import {NavigatorScreenParams} from '@react-navigation/native';
 import {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import type {Milestone} from '@/features/gamification/milestones';
+import type {QuickReviewPrompt} from '@/features/gamification/srs';
 
 // Onboarding Stack Navigator — the value-before-signup first run
 // (screens.md "ONBOARDING"): Welcome → Topics → Reading Level → Golden First
@@ -35,6 +36,10 @@ export type RootStackParamList = {
   // Star) — reachable from completion and from tapping a Profile trophy. The
   // milestone is a plain serializable object (issue #14, screens.md §12/§14b).
   Celebration: {milestone: Milestone};
+  // Optional 60-second quick review (light SRS) — opened from the Lesson-complete
+  // exits. Carries the selected prompts (Item + answer); never a due-queue, no
+  // red debt badge (CONTEXT.md → "SRS"; issue #14).
+  QuickReview: {prompts: QuickReviewPrompt[]};
   // Legacy boilerplate / design-system demo routes (kept reachable).
   Settings: undefined;
   ComponentsDemo: undefined;

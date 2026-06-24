@@ -12,6 +12,7 @@ import {recordLessonCompletion} from '@/features/home';
 import {
   detectMilestones,
   primaryMilestone,
+  selectQuickReview,
   type GamificationSnapshot,
   type Milestone,
 } from '@/features/gamification';
@@ -205,6 +206,18 @@ export default function LessonPlayerScreen({route}: Props) {
     }
   };
 
+  // Open the optional 60-second quick review (light SRS) over the Items just
+  // Absorbed this session — opt-in, never a due-queue. Empty selection still
+  // opens (the view shows its no-debt empty state), so the exit is consistent.
+  const openQuickReview = () => {
+    const absorbedItems = lesson.items.filter(
+      item => session.decided[item.id] === 'absorbed',
+    );
+    navigation.navigate('QuickReview', {
+      prompts: selectQuickReview(absorbedItems),
+    });
+  };
+
   return (
     <View className="flex-1 bg-background" testID={lessonId ? `lesson-${lessonId}` : undefined}>
       {phase === 'loading' ? (
@@ -255,7 +268,7 @@ export default function LessonPlayerScreen({route}: Props) {
           onContinue={continueToRecommended}
           onOpenDiscovery={close}
           onCelebrate={openCelebration}
-          onQuickReview={close}
+          onQuickReview={openQuickReview}
           onRest={close}
         />
       )}
