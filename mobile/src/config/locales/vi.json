@@ -62,5 +62,20 @@
   "DS_CHUNK": "Chunk",
   "DS_GRAMMAR_POINT": "Ngữ pháp",
   "DS_ABSORBED": "Đã nạp",
-  "DS_TAP_TO_ABSORB": "Chạm vào Item để nạp (teal → amber)"
+  "DS_TAP_TO_ABSORB": "Chạm vào Item để nạp (teal → amber)",
+  "TAB_LEARN": "Học",
+  "TAB_CREATE": "Tạo",
+  "TAB_CHALLENGE": "Thử thách",
+  "TAB_PROFILE": "Hồ sơ",
+  "PLACEHOLDER_LEARN": "Đây là nơi bạn tiếp tục dòng chảy học tập.",
+  "PLACEHOLDER_CREATE": "Biến bài viết, video hay podcast yêu thích thành bài học.",
+  "PLACEHOLDER_CHALLENGE": "Lướt các thử thách ngắn để học mà như giải trí.",
+  "PLACEHOLDER_PROFILE": "North Star, trình độ, streak và bộ sưu tập của bạn.",
+  "PLACEHOLDER_LESSON_PLAYER": "Bề mặt đọc song ngữ và Nghe lại sẽ xuất hiện ở đây.",
+  "HOME_CONTINUE": "Tiếp tục",
+  "LESSON_PLAYER": "Trình học bài",
+  "CLOSE": "Đóng",
+  "ONBOARDING_WELCOME_TITLE": "Học tiếng Anh bằng chính nội dung bạn mê",
+  "ONBOARDING_WELCOME_SUBTITLE": "Biến bài viết · video · podcast yêu thích → bài học",
+  "ONBOARDING_START": "Bắt đầu"
 }

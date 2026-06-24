@@ -62,5 +62,20 @@
   "DS_CHUNK": "Chunk",
   "DS_GRAMMAR_POINT": "Grammar Point",
   "DS_ABSORBED": "Absorbed",
-  "DS_TAP_TO_ABSORB": "Tap an Item to absorb it (teal → amber)"
+  "DS_TAP_TO_ABSORB": "Tap an Item to absorb it (teal → amber)",
+  "TAB_LEARN": "Learn",
+  "TAB_CREATE": "Create",
+  "TAB_CHALLENGE": "Challenge",
+  "TAB_PROFILE": "Profile",
+  "PLACEHOLDER_LEARN": "This is where you keep your learning in flow.",
+  "PLACEHOLDER_CREATE": "Turn articles, videos and podcasts you love into Lessons.",
+  "PLACEHOLDER_CHALLENGE": "Swipe short Challenges and learn like it's entertainment.",
+  "PLACEHOLDER_PROFILE": "Your North Star, Levels, Streak and Collection.",
+  "PLACEHOLDER_LESSON_PLAYER": "The Bilingual Passage and Listening Replay will live here.",
+  "HOME_CONTINUE": "Continue",
+  "LESSON_PLAYER": "Lesson Player",
+  "CLOSE": "Close",
+  "ONBOARDING_WELCOME_TITLE": "Learn English through the content you love",
+  "ONBOARDING_WELCOME_SUBTITLE": "Turn your favorite articles · videos · podcasts → Lessons",
+  "ONBOARDING_START": "Get started"
 }
