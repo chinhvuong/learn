@@ -91,6 +91,13 @@ export default function LessonCoreIntroPlayer({
         ? t('LP_CORE_KIND_GRAMMAR')
         : t('LP_CORE_KIND_VOCAB');
 
+  // Segmented type header (📘 Từ / 🧩 Chunk / ⚙ NP), one per Item type.
+  const segments = [
+    {kind: 'vocabulary' as const, key: 'LP_CORE_SEG_VOCAB', count: counts.vocabulary},
+    {kind: 'chunk' as const, key: 'LP_CORE_SEG_CHUNK', count: counts.chunk},
+    {kind: 'grammarPoint' as const, key: 'LP_CORE_SEG_GRAMMAR', count: counts.grammarPoint},
+  ];
+
   return (
     <View
       style={[
@@ -127,37 +134,37 @@ export default function LessonCoreIntroPlayer({
           <ProgressBar value={total === 0 ? 0 : ((index + 1) / total) * 100} />
         </View>
 
-        {/* Type segment header (📘 Từ / 🧩 Chunk / ⚙ NP). */}
+        {/* Type segment header (📘 Từ / 🧩 Chunk / ⚙ NP) — the segment for the
+            current Item's type is highlighted with a surface-backed pill
+            (handoff `segStyle`). */}
         <View style={[styles.segments, {backgroundColor: colors.surface2}]}>
-          <AppText
-            raw
-            style={[
-              styles.segment,
-              {
-                color: item.type === 'vocabulary' ? colors.flowInk : colors.ink3,
-              },
-            ]}>
-            {t('LP_CORE_SEG_VOCAB', {count: counts.vocabulary})}
-          </AppText>
-          <AppText
-            raw
-            style={[
-              styles.segment,
-              {color: item.type === 'chunk' ? colors.flowInk : colors.ink3},
-            ]}>
-            {t('LP_CORE_SEG_CHUNK', {count: counts.chunk})}
-          </AppText>
-          <AppText
-            raw
-            style={[
-              styles.segment,
-              {
-                color:
-                  item.type === 'grammarPoint' ? colors.flowInk : colors.ink3,
-              },
-            ]}>
-            {t('LP_CORE_SEG_GRAMMAR', {count: counts.grammarPoint})}
-          </AppText>
+          {segments.map(seg => {
+            const on = item.type === seg.kind;
+            return (
+              <View
+                key={seg.kind}
+                style={[
+                  styles.segment,
+                  on
+                    ? [styles.segmentOn, {backgroundColor: colors.surface}]
+                    : null,
+                ]}>
+                <AppText
+                  raw
+                  style={[
+                    styles.segmentText,
+                    {
+                      color: on ? colors.ink : colors.ink3,
+                      fontFamily: on
+                        ? InflowFonts.ui.extrabold
+                        : InflowFonts.ui.semibold,
+                    },
+                  ]}>
+                  {t(seg.key, {count: seg.count})}
+                </AppText>
+              </View>
+            );
+          })}
         </View>
       </View>
 
@@ -339,10 +346,21 @@ const styles = StyleSheet.create({
   },
   segment: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 9,
+    paddingVertical: 6,
+  },
+  segmentOn: {
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 2},
+    elevation: 2,
+  },
+  segmentText: {
     textAlign: 'center',
-    fontFamily: InflowFonts.ui.semibold,
     fontSize: 10.5,
-    paddingVertical: 4,
   },
   cardScroll: {flex: 1},
   cardScrollContent: {

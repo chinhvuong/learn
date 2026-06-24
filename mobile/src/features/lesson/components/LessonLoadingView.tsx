@@ -2,6 +2,7 @@ import React, {useEffect, useRef} from 'react';
 import {Animated, Easing, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
+import Svg, {Path} from 'react-native-svg';
 import {AppText} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
 import {InflowFonts} from '@/config/typography';
@@ -41,6 +42,8 @@ export default function LessonLoadingView({
   const spin = useRef(new Animated.Value(0)).current;
   // Container pop-in (handoff `popUp`).
   const pop = useRef(new Animated.Value(0)).current;
+  // Active-step shimmer (handoff `shimmer` — opacity .45 → 1 → .45, 1.4s).
+  const shimmer = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -54,6 +57,27 @@ export default function LessonLoadingView({
     loop.start();
     return () => loop.stop();
   }, [spin]);
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmer, {
+          toValue: 0,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [shimmer]);
 
   useEffect(() => {
     Animated.timing(pop, {
@@ -77,6 +101,12 @@ export default function LessonLoadingView({
       },
     ],
   };
+
+  // The active build step pulses its opacity (handoff `shimmer`).
+  const shimmerOpacity = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.45, 1],
+  });
 
   const processing = variant === 'processing';
   const title = processing ? t('LP_PROCESSING_TITLE') : t('LP_LOADING_TITLE');
@@ -121,9 +151,34 @@ export default function LessonLoadingView({
             ]}
             pointerEvents="none"
           />
-          <AppText raw style={styles.spinnerEmoji}>
-            {processing ? '⚙️' : '✦'}
-          </AppText>
+          {processing ? (
+            // Processing a fresh Source → gear (handoff 13e·PROCESSING).
+            <AppText raw style={styles.spinnerEmoji}>
+              ⚙️
+            </AppText>
+          ) : (
+            // Cache-hit open → the flow-gradient app tile (handoff E4·LOADING).
+            <View
+              style={[styles.spinnerTile, {backgroundColor: colors.flowPress}]}
+              pointerEvents="none">
+              <Svg width={22} height={22} viewBox="0 0 20 20" fill="none">
+                <Path
+                  d="M2.6 7c2-2.4 4.1-2.4 6.1 0s4.1 2.4 6.1 0"
+                  stroke={colors.onFlow}
+                  strokeWidth={1.7}
+                  strokeLinecap="round"
+                  opacity={0.95}
+                />
+                <Path
+                  d="M3.2 12.4c2-2.4 4-2.4 6 0s4 2.4 6 0"
+                  stroke={colors.onFlow}
+                  strokeWidth={1.7}
+                  strokeLinecap="round"
+                  opacity={0.6}
+                />
+              </Svg>
+            </View>
+          )}
         </View>
 
         <AppText raw style={[styles.title, {color: colors.ink}]}>
@@ -135,7 +190,12 @@ export default function LessonLoadingView({
 
         <View style={styles.steps}>
           {steps.map((step, idx) => (
-            <View key={idx} style={styles.stepRow}>
+            <Animated.View
+              key={idx}
+              style={[
+                styles.stepRow,
+                step.state === 'active' ? {opacity: shimmerOpacity} : null,
+              ]}>
               <View
                 style={[
                   styles.stepDot,
@@ -175,7 +235,7 @@ export default function LessonLoadingView({
                 ]}>
                 {step.label}
               </AppText>
-            </View>
+            </Animated.View>
           ))}
         </View>
 
@@ -220,6 +280,13 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   spinnerEmoji: {fontSize: 28},
+  spinnerTile: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontFamily: InflowFonts.ui.extrabold,
     fontSize: 19,
