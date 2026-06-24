@@ -42,7 +42,11 @@ The shape that requires reading multiple docs to grasp:
 
 ## Backend (`backend/`)
 
-NestJS with a **two-process split** driven by the `SERVICE_TYPE` env var (`api` | `worker` | `all`): `src/main.ts` dispatches to `bootstrap/api` or `bootstrap/worker`. Each feature module is split into `*-api.module.ts` (HTTP controllers) and `*-worker.module.ts` (BullMQ processors / scheduled sweepers) so the headless worker never loads controllers. Postgres via TypeORM (entities + a repository-per-entity pattern over `abstract.entity`/`abstract.repository`); Redis backs both BullMQ and caching. Path aliases (`@config/*`, `@database/*`, `@modules/*`, `@shared/*`, …) are defined in `tsconfig.json`. Auth is Firebase ID-token verification via middleware that upserts the `users` row on every request.
+NestJS with a **two-process split** driven by the `SERVICE_TYPE` env var (`api` | `worker` | `all`): `src/main.ts` dispatches to `bootstrap/api` or `bootstrap/worker`. Each feature module is split into `*-api.module.ts` (HTTP controllers) and `*-worker.module.ts` (BullMQ processors / scheduled sweepers) plus a `*.module.ts` that wires shared providers, so the headless worker never loads controllers. Postgres via TypeORM (entities + a repository-per-entity pattern over `abstract.entity`/`abstract.repository`); Redis backs both BullMQ and caching. Path aliases (`@config/*`, `@database/*`, `@modules/*`, `@shared/*`, …) are defined in `tsconfig.json`. Auth is Firebase ID-token verification via middleware that upserts the `users` row on every request.
+
+Only two feature modules exist so far: **`modules/users`** is the one real domain module, and **`modules/demo`** is a copy-me reference that demonstrates the full pattern end-to-end (api/worker module split, a `publishers/` producer enqueuing onto a queue declared in `constants/`, and a `processors/` consumer). **When adding a feature module, mirror `demo`'s structure.** Disable it in production via `DEMO_ENABLED=false`.
+
+**Firebase auth setup:** copy `.env.example` → `.env` and set `FIREBASE_PROJECT_ID` + `FIREBASE_SERVICE_ACCOUNT_JSON` (the full service-account JSON, base64-encoded). `yarn firebase:base64` encodes a local `firebase-admin-dev.json` to the clipboard for that var.
 
 Commands (run inside `backend/`):
 
