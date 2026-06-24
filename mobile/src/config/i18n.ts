@@ -84,9 +84,13 @@ const getDeviceLanguage = (): LanguageCode => {
   return 'en';
 };
 
-const resources = {
-  en: {translation: en},
-};
+// Register every imported locale (not just English) so the Vietnamese product
+// copy in vi.json actually resolves — without this, a `vi` device/app language
+// silently falls back to the English bundle. Derived from LANGUAGES so adding a
+// locale above is enough. (UI copy is Vietnamese per the product spec.)
+const resources = Object.fromEntries(
+  Object.entries(LANGUAGES).map(([code, {schema}]) => [code, {translation: schema}]),
+) as Record<LanguageCode, {translation: typeof en}>;
 
 i18n
   .use(initReactI18next)
