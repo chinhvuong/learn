@@ -38,5 +38,12 @@ export default function LearnScreen() {
     navigation.navigate('LessonPlayer', {lessonId: lesson.lessonId});
   };
 
-  return <HomeView onContinue={openLesson} onOpenRecommended={openLesson} />;
+  return (
+    <HomeView
+      onContinue={openLesson}
+      onOpenRecommended={openLesson}
+      onOpenLibrary={() => navigation.navigate('MyLibrary')}
+      onOpenSettings={() => navigation.navigate('Settings')}
+    />
+  );
 }

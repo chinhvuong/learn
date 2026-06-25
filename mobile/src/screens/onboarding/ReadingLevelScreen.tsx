@@ -3,7 +3,8 @@ import {Pressable, ScrollView, View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
-import {AppButton, AppText} from "@/components/ui";
+import {AppText} from "@/components/ui";
+import Icon from "@/components/ui/Icon.tsx";
 import {useColors} from "@/hooks/useColors.ts";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
@@ -99,64 +100,61 @@ export default function ReadingLevelScreen() {
 
   const startGoldenLesson = () => {
     awaitingLesson.current = true;
-    navigation.getParent()?.navigate("LessonPlayer", {lessonId: GOLDEN_FIRST_LESSON.id});
+    // `onboarding: true` tells the Player to hand back here on completion (vs.
+    // the core-loop Lesson-complete view) so this screen's focus handler can
+    // commit the anonymous progress and advance to Result.
+    navigation.getParent()?.navigate("LessonPlayer", {
+      lessonId: GOLDEN_FIRST_LESSON.id,
+      onboarding: true,
+    });
   };
 
   return (
-    <View className={"flex-1 bg-background"} style={{paddingTop: insets.top}}>
+    <View className={"flex-1 bg-app-bg"} style={{paddingTop: insets.top}}>
       <ScrollView
         className={"flex-1"}
-        contentContainerStyle={{paddingHorizontal: 26, paddingTop: 18}}
+        contentContainerStyle={{paddingHorizontal: 20, paddingTop: 18, paddingBottom: 8}}
         showsVerticalScrollIndicator={false}
       >
         <OnboardingProgress total={3} current={2}/>
-        <AppText variant={"heading1"} className={"mb-4"}>
-          ONBOARDING_LEVEL_TITLE
+        <AppText weight={"extrabold"} raw className={"text-ink mb-4"} style={{fontSize: 24, lineHeight: 30}}>
+          {t("ONBOARDING_LEVEL_TITLE")}
         </AppText>
 
-        <View className={"gap-2.5"}>
+        <View style={{gap: 10}}>
           {READING_LEVEL_OPTIONS.map(option => {
             const isSelected = option.id === selectedId;
             return (
               <Pressable
                 key={option.id}
                 onPress={() => select(option.id)}
-                className={`flex-row gap-3 p-4 rounded-2xl border-[1.5px] ${
+                className={`flex-row p-[14px] rounded-[14px] border active:opacity-90 ${
                   isSelected ? "bg-flow-soft border-flow" : "bg-surface border-border"
                 }`}
-                style={
-                  isSelected
-                    ? {
-                        shadowColor: colors.flow,
-                        shadowOpacity: 0.18,
-                        shadowRadius: 16,
-                        shadowOffset: {width: 0, height: 6},
-                        elevation: 3,
-                      }
-                    : undefined
-                }
+                style={{gap: 12}}
               >
                 <View
-                  className={`w-5 h-5 rounded-full border-2 mt-0.5 items-center justify-center ${
-                    isSelected ? "border-flow" : "border-border"
+                  className={`w-5 h-5 rounded-[10px] mt-0.5 items-center justify-center border-2 ${
+                    isSelected ? "bg-flow border-flow" : "bg-surface border-border"
                   }`}
                 >
-                  {isSelected ? <View className={"w-2.5 h-2.5 rounded-full bg-flow"}/> : null}
+                  {isSelected ? <Icon name={"Check"} className={"w-3 h-3 text-on-flow"}/> : null}
                 </View>
-                <View className={"flex-1"}>
+                <View className={"flex-1"} style={{gap: 3}}>
                   <AppText
-                    variant={"heading4"}
                     weight={"bold"}
-                    color={isSelected ? "primary" : "default"}
+                    raw
+                    className={isSelected ? "text-flow-ink" : "text-ink"}
+                    style={{fontSize: 15.5}}
                   >
-                    {option.titleKey}
+                    {t(option.titleKey)}
                   </AppText>
                   <AppText
-                    variant={"bodySmall"}
-                    color={isSelected ? "primary" : "muted"}
-                    className={"mt-0.5"}
+                    raw
+                    className={isSelected ? "text-flow-ink" : "text-ink2"}
+                    style={{fontSize: 13.5, lineHeight: 20}}
                   >
-                    {option.exampleKey}
+                    {t(option.exampleKey)}
                   </AppText>
                 </View>
               </Pressable>
@@ -164,22 +162,29 @@ export default function ReadingLevelScreen() {
           })}
         </View>
 
-        <View className={"flex-row gap-2.5 mt-4 p-3.5 rounded-xl bg-warm-soft"}>
-          <AppText variant={"body"} raw>💡</AppText>
-          <AppText variant={"bodySmall"} weight={"semibold"} className={"flex-1 text-warm-ink"}>
-            ONBOARDING_LEVEL_HINT
+        <View className={"mt-4 p-[14px] rounded-[14px] bg-warm-soft"}>
+          <AppText raw className={"text-warm-ink"} style={{fontSize: 13.5, lineHeight: 20}}>
+            {t("ONBOARDING_LEVEL_HINT")}
           </AppText>
         </View>
       </ScrollView>
 
-      <View className={"px-6 pt-3.5"} style={{paddingBottom: insets.bottom + 12}}>
-        <AppButton
-          variant={"primary"}
-          className={"w-full rounded-2xl"}
+      <View className={"px-5 pt-3"} style={{paddingBottom: insets.bottom + 20}}>
+        <Pressable
           onPress={startGoldenLesson}
+          className={"w-full items-center justify-center rounded-2xl py-4 bg-flow active:opacity-90"}
+          style={{
+            shadowColor: colors.flow,
+            shadowOpacity: 0.24,
+            shadowRadius: 14,
+            shadowOffset: {width: 0, height: 8},
+            elevation: 5,
+          }}
         >
-          {t("ONBOARDING_CONTINUE")}
-        </AppButton>
+          <AppText weight={"bold"} raw className={"text-on-flow"} style={{fontSize: 16}}>
+            {t("ONBOARDING_CONTINUE")}
+          </AppText>
+        </Pressable>
       </View>
     </View>
   );
