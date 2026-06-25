@@ -49,8 +49,23 @@ export {
   initialLessonSessionState,
 } from './lessonSessionSlice';
 export type {ItemDecision, LessonSessionState} from './lessonSessionSlice';
+export {
+  SECTION10_LESSON,
+  SECTION10_LESSON_ID,
+  SECTION10_ITEMS,
+  SECTION10_ITEMS_BY_ID,
+  SECTION10_WARMUP_GROUPS,
+  SECTION10_WARMUP_ORDER,
+  SECTION10_COVERS,
+  SECTION10_COVER_TITLES,
+  SECTION10_READING_PAGES,
+  SECTION10_PAGE_COUNT,
+} from './lessonPlayerSection10';
 export {default as LessonLoadingView} from './components/LessonLoadingView';
 export {default as LessonCoreIntroPlayer} from './components/LessonCoreIntroPlayer';
+export {default as LessonCoverScreen} from './components/LessonCoverScreen';
+export {default as LessonWarmupPlayer} from './components/LessonWarmupPlayer';
+export {default as LessonReadingImmersion} from './components/LessonReadingImmersion';
 export {default as LessonReadingPlayer} from './components/LessonReadingPlayer';
 export {default as LessonListeningPlayer} from './components/LessonListeningPlayer';
 export {default as LessonComprehensionQuiz} from './components/LessonComprehensionQuiz';
