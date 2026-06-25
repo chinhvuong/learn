@@ -111,6 +111,9 @@ export const GOLDEN_AUDIO_LESSON: Lesson = {
   audio: {
     asset: null,
     sourceLabel: 'Podcast · Daily English',
+    kind: 'video',
+    thumbnailUrl:
+      'https://images.unsplash.com/photo-1758598305014-2e8daf37b2b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODIzMjUyMzV8&ixlib=rb-4.1.0&q=80&w=1080',
     durationSec: 13.2,
     sentenceTimestamps: [
       {sentenceId: 'as0', start: 0, end: 3.1},

@@ -123,6 +123,18 @@ export interface LessonAudio {
   asset: unknown;
   /** Source-type chrome label, e.g. "Podcast · Daily English" (Vietnamese UI). */
   sourceLabel: string;
+  /**
+   * Which audio Source kind this is — selects the Listening Replay chrome
+   * (screens.md §10): a `video` Source (YouTube) shows the "Xem & nghe" watch
+   * header + a "CC bật" subtitle pill; a `podcast` Source shows the "Đang nghe"
+   * header + a "Transcript" pill. Both share the same Listening Replay body.
+   */
+  kind: 'video' | 'podcast';
+  /**
+   * Poster image for the media frame (the video thumbnail / podcast cover).
+   * A remote URL or a bundled `require(...)` module id; absent → a flat surface.
+   */
+  thumbnailUrl?: string;
   /** Total audio duration in seconds (for buffering / end-of-audio handling). */
   durationSec: number;
   /** Per-sentence playback spans, in passage order. */

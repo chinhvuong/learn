@@ -72,7 +72,7 @@ export default function LessonPlayerScreen({route}: Props) {
   const navigation = useNavigation<Props['navigation']>();
   const dispatch = useAppDispatch();
   const {t} = useTranslation();
-  const {lessonId, onboarding} = route.params ?? {};
+  const {lessonId, onboarding, audioKind} = route.params ?? {};
 
   // The bundled Lessons available today; a real lookup by `lessonId` arrives
   // with the lesson API. Route to the audio Lesson or the §10 flagship Lesson
@@ -321,8 +321,9 @@ export default function LessonPlayerScreen({route}: Props) {
         <LessonListeningPlayer
           lesson={lesson}
           northStarBase={northStarBase}
+          variant={audioKind}
           onClose={close}
-          onCompleted={() => setPhase('complete')}
+          onCompleted={() => setPhase('quiz')}
         />
       ) : phase === 'reading' ? (
         <LessonReadingPlayer
@@ -358,6 +359,7 @@ export default function LessonPlayerScreen({route}: Props) {
           onOpenDiscovery={close}
           onCelebrate={openCelebration}
           onQuickReview={openQuickReview}
+          onShare={close}
           onRest={close}
         />
       )}
