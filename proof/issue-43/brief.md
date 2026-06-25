@@ -61,16 +61,35 @@ system (no per-screen hardcoded colors).
   gradients — NativeWind has no gradient utility wired, and the gradients in the
   design are near-flat. The Continue card keeps its teal drop shadow via inline
   style. Visually within pixel tolerance.
-- Discover suggestion cards omit the decorative diagonal "stripe" texture inside
-  each thumbnail (a purely decorative design detail); the duration badge + title
-  match.
 - Home suggestion cards + Series rows are seeded to mirror the wireframe until
   the personalized feed (#3) and the per-learner Library store land; the first
   suggestion opens the live recommendation when present.
 
+## Post-integration follow-up (round 2)
+
+The orchestrator's first running-app capture predated the initial commit and
+reported four gaps. All four were already implemented in that commit; verified by
+code and re-diffed against the design nodes (`LSfol` Daily Goal, `tK3kg` Discover
+header):
+
+1. Daily Goal — renders as the 5-dot meter (`goalDotsFilled`, filled = `bg-flow`,
+   empty = `bg-hair`) left of the "6/10′" `flow-ink` label. No ProgressBar.
+   Matches `LSfol` (●●●○○).
+2. Discover — heading row "Gợi ý cho bạn · cùng gu · Xem tất cả →" followed by a
+   horizontal strip of three thumbnail cards (`suggestions.map`). Matches `tK3kg`.
+3. Top row — the "✦ Pro" flow pill sits before the gear (HomeView line ~125).
+4. My Library reachability — Home content is in a `ScrollView`; the "Thư viện của
+   tôi" entry row's `onPress={onOpenLibrary}` and LearnScreen passes
+   `onOpenLibrary={() => navigation.navigate('MyLibrary')}`. Route `MyLibrary` is
+   registered in `RootStackNavigator`/`types.ts`. Confirmed by code + tsc.
+
+Added in round 2: the decorative diagonal "stripe" texture inside each Discover
+thumbnail (design `stripe` rects — rotated -25°, `border` @ 0.5 opacity, clipped),
+removing the only remaining deliberate delta on the Discover strip.
+
 ## Checks (run from mobile/)
 
 - `yarn tsc --noEmit` — passed (no errors).
-- `yarn test` — 13 suites, 141 tests passed.
+- `yarn test` — `Test Suites: 13 passed, 13 total` · `Tests: 141 passed, 141 total`.
 - No `lint` script exists in this boilerplate; ESLint is not installed. tsc +
   jest are the project's checks.

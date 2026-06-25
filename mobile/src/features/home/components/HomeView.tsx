@@ -312,7 +312,24 @@ export default function HomeView({
             }
             className="flex-1 rounded-2xl bg-surface border border-hair p-2 active:opacity-80"
             style={{gap: 8}}>
-            <View className="h-[74px] rounded-[10px] bg-bg-2 items-end justify-end p-1.5">
+            <View className="h-[74px] rounded-[10px] bg-bg-2 items-end justify-end p-1.5 overflow-hidden">
+              {/* Diagonal stripe texture (design `stripe` rects) */}
+              {[6, 28, 50, 72, 94].map(left => (
+                <View
+                  key={left}
+                  pointerEvents="none"
+                  className="bg-border"
+                  style={{
+                    position: 'absolute',
+                    left,
+                    top: -6,
+                    width: 7,
+                    height: 96,
+                    opacity: 0.5,
+                    transform: [{rotate: '-25deg'}],
+                  }}
+                />
+              ))}
               <View className="rounded-lg bg-ink/70 px-1.5 py-0.5">
                 <AppText
                   raw
