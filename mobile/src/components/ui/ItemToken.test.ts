@@ -1,7 +1,7 @@
 /**
- * Fidelity tests for the Item-encoding primitive and the OKLCH token sets,
- * locking them to the design handoff (#system legend + `tokenStyle()`, and the
- * Design Tokens table in design_handoff_inflow_app/README.md).
+ * Fidelity tests for the Item-encoding primitive and the design token sets,
+ * locking them to the design (#system legend + `tokenStyle()`, and the token
+ * variable set in docs/design/design.pen — the binding visual contract).
  *
  * These are pure-data assertions (no component render) so they run in the
  * repo's existing node/jest harness.
@@ -70,29 +70,34 @@ describe('itemTokenStyle — Item-encoding legend', () => {
   });
 });
 
-describe('OKLCH token sets — values match the handoff Design Tokens table', () => {
-  // Computed from the README/HTML oklch() values via the OKLCH→sRGB transform.
+describe('token sets — values match docs/design/design.pen', () => {
+  // Exact light/dark hex from the design.pen variable set (the binding visual
+  // contract — read via the Pencil `get_variables` tool, issue #41).
   it('light token family values are exact', () => {
-    expect(AppColorsLight.flow).toBe('#218da3');
-    expect(AppColorsLight.warm).toBe('#cf883d');
-    expect(AppColorsLight.flowSoft).toBe('#d1f0f6');
-    expect(AppColorsLight.warmSoft).toBe('#fee3c3');
-    expect(AppColorsLight.flowInk).toBe('#005d73');
-    expect(AppColorsLight.warmInk).toBe('#995212');
-    expect(AppColorsLight.ink).toBe('#1f2730');
+    expect(AppColorsLight.flow).toBe('#2c8b9d');
+    expect(AppColorsLight.warm).toBe('#cf8a44');
+    expect(AppColorsLight.flowSoft).toBe('#d7ebf0');
+    expect(AppColorsLight.warmSoft).toBe('#f2e2c9');
+    expect(AppColorsLight.flowInk).toBe('#1b6573');
+    expect(AppColorsLight.warmInk).toBe('#9a5f2a');
+    expect(AppColorsLight.ink).toBe('#2c3440');
     expect(AppColorsLight.surface).toBe('#ffffff');
-    expect(AppColorsLight.onFlow).toBe('#f5feff');
+    expect(AppColorsLight.onFlow).toBe('#fafdfe');
+    expect(AppColorsLight.appBg).toBe('#f8fafb');
+    expect(AppColorsLight.hair).toBe('#e3e6e9');
   });
 
   it('dark token family values are exact', () => {
-    expect(AppColors.flow).toBe('#48b7bd');
-    expect(AppColors.warm).toBe('#f0af60');
-    expect(AppColors.flowSoft).toBe('#083840');
-    expect(AppColors.warmSoft).toBe('#493118');
-    expect(AppColors.flowInk).toBe('#7aced2');
-    expect(AppColors.warmInk).toBe('#efbd7d');
-    expect(AppColors.ink).toBe('#ecf1f3');
-    expect(AppColors.surface).toBe('#1a2128');
-    expect(AppColors.onFlow).toBe('#08131a');
+    expect(AppColors.flow).toBe('#4fb6c5');
+    expect(AppColors.warm).toBe('#e5ab5e');
+    expect(AppColors.flowSoft).toBe('#294751');
+    expect(AppColors.warmSoft).toBe('#493826');
+    expect(AppColors.flowInk).toBe('#84cfda');
+    expect(AppColors.warmInk).toBe('#e8b877');
+    expect(AppColors.ink).toBe('#eff1f4');
+    expect(AppColors.surface).toBe('#2a2f37');
+    expect(AppColors.onFlow).toBe('#1a2028');
+    expect(AppColors.appBg).toBe('#22272e');
+    expect(AppColors.hair).toBe('#343a43');
   });
 });
