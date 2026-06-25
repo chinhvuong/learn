@@ -39,6 +39,24 @@ export const selectAnswer = (
   return {...answers, [questionIndex]: optionIndex};
 };
 
+/**
+ * Clear a question's recorded answer so the learner can **retry** it (screens.md
+ * §10 LP5b `WFyG7` — a wrong answer offers "Thử lại", which re-opens the same
+ * question). Returns a new map without that question's entry; idempotent if it
+ * was never answered.
+ */
+export const clearAnswer = (
+  answers: QuizAnswers,
+  questionIndex: number,
+): QuizAnswers => {
+  if (!isAnswered(answers, questionIndex)) {
+    return answers;
+  }
+  const next = {...answers};
+  delete next[questionIndex];
+  return next;
+};
+
 /** How many questions have been answered so far. */
 export const countAnswered = (answers: QuizAnswers): number =>
   Object.keys(answers).length;

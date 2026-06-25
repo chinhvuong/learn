@@ -35,7 +35,16 @@ export type RootStackParamList = {
   // onboarding Reading Level step — on completion the Player hands back to the
   // Onboarding "Result" recap (Result → Signup → Push → Main) instead of the
   // core-loop Lesson-complete view (PRD stories 6–8; OnboardingStackNavigator).
-  LessonPlayer: {lessonId?: string; onboarding?: boolean} | undefined;
+  // `audioKind` optionally overrides the Listening Replay chrome (screens.md
+  // §10): `video` → "Xem & nghe" + CC pill (LP4 rak7A); `podcast` → "Đang nghe"
+  // + Transcript pill (LP4 vPf0d). Defaults to the Lesson's own audio.kind.
+  LessonPlayer:
+    | {
+        lessonId?: string;
+        onboarding?: boolean;
+        audioKind?: 'video' | 'podcast';
+      }
+    | undefined;
   // Full-screen major-milestone Celebration (Streak / Level up / round North
   // Star) — reachable from completion and from tapping a Profile trophy. The
   // milestone is a plain serializable object (issue #14, screens.md §12/§14b).

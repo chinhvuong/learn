@@ -10,6 +10,7 @@
  */
 
 import {
+  clearAnswer,
   countAnswered,
   isAnswered,
   isCorrect,
@@ -84,6 +85,33 @@ describe('quizLogic — correct / incorrect reveal', () => {
       answers = selectAnswer(answers, i, q.correctIndex);
     });
     expect(quizScore(QUESTIONS, answers)).toBe(QUESTIONS.length);
+  });
+});
+
+describe('quizLogic — retry (clearAnswer) after a wrong pick', () => {
+  it('re-opens a wrong question so it can be answered again (LP5b Thử lại)', () => {
+    const wrong = (QUESTIONS[0].correctIndex + 1) % QUESTIONS[0].options.length;
+    let answers: QuizAnswers = selectAnswer({}, 0, wrong);
+    expect(isAnswered(answers, 0)).toBe(true);
+    answers = clearAnswer(answers, 0);
+    expect(isAnswered(answers, 0)).toBe(false);
+    // After retry, the learner can lock a new (correct) answer.
+    answers = selectAnswer(answers, 0, QUESTIONS[0].correctIndex);
+    expect(isCorrect(QUESTIONS[0], answers, 0)).toBe(true);
+  });
+
+  it('only clears the targeted question, leaving others locked', () => {
+    let answers: QuizAnswers = {};
+    answers = selectAnswer(answers, 0, 0);
+    answers = selectAnswer(answers, 1, 2);
+    answers = clearAnswer(answers, 1);
+    expect(isAnswered(answers, 0)).toBe(true);
+    expect(isAnswered(answers, 1)).toBe(false);
+  });
+
+  it('is a no-op (same reference) when the question was never answered', () => {
+    const answers = selectAnswer({}, 0, 0);
+    expect(clearAnswer(answers, 1)).toBe(answers);
   });
 });
 

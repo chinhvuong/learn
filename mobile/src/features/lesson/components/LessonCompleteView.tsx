@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,13 +8,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
-import {AppButton, AppText} from '@/components/ui';
+import {AppText, Icon} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
 import {InflowFonts} from '@/config/typography';
 import Confetti from '@/features/gamification/components/Confetti';
 import type {CefrBand, Item} from '../types';
 import type {ItemDecision} from '../lessonSessionSlice';
-import NorthStarCounter from './NorthStarCounter';
 
 /** The skill whose Level this session moved (CONTEXT.md → "Level"). */
 export type LessonSkill = 'reading' | 'listening';
@@ -27,17 +27,18 @@ export interface DiscoverySuggestion {
 }
 
 /**
- * The single Top-pick Next Lesson recommendation shown above the fold (screens.md
- * §11; the `#core` completion frame). Carries the Recommendation Reason + match %
- * the card must always show (CONTEXT.md → "Recommendation Reason"). Produced by
- * the recommendation engine (`nextLesson`, issue #13).
+ * The single Top-pick Next Lesson recommendation shown on the Completion recap
+ * (screens.md §10 LP6 `Z90VA2`; the "TIẾP THEO · CÙNG KÊNH" card). Carries the
+ * Recommendation Reason + match % the card must always show (CONTEXT.md →
+ * "Recommendation Reason"). Produced by the recommendation engine (`nextLesson`,
+ * issue #13).
  */
 export interface RecommendedNextLesson {
   /** The recommended Lesson id (deep-linked by the one-tap Continue). */
   lessonId: string;
   /** English Source title (e.g. "AI in Healthcare"). */
   title: string;
-  /** Minutes · topic · CEFR caption (e.g. "5 phút · Công nghệ · B1"). */
+  /** Minutes · topic · CEFR caption (e.g. "TechVision · 5 phút · B1"). */
   meta: string;
   /** Human-readable Recommendation Reason (e.g. "vì bạn thích chủ đề Công nghệ"). */
   reason: string;
@@ -50,7 +51,7 @@ export interface LessonCompleteViewProps {
   decided: Record<string, ItemDecision>;
   /** Minutes studied this session (session recap — CONTEXT.md → "North Star"). */
   minutesStudied: number;
-  /** Which skill this Lesson trains — selects the Level label shown. */
+  /** Which skill this Lesson trains — selects the recap headline copy. */
   skill: LessonSkill;
   /** The learner's current CEFR band for that skill (the skill-specific Level). */
   skillLevel: CefrBand;
@@ -60,45 +61,56 @@ export interface LessonCompleteViewProps {
   northStarBase: number;
   northStarLive: number;
   /**
-   * The Top-pick Next Lesson recommendation (Reason + match %) shown above the
-   * fold and preloaded behind the one-tap Continue (CONTEXT.md → "Next Lesson
-   * recommendation"). Absent only when the engine has nothing eligible.
+   * The Top-pick Next Lesson recommendation (Reason + match %) shown in the
+   * "TIẾP THEO · CÙNG KÊNH" card and preloaded behind the one-tap Continue
+   * (CONTEXT.md → "Next Lesson recommendation"). Absent only when the engine has
+   * nothing eligible.
    */
   recommended?: RecommendedNextLesson | null;
   /** The learner's current Streak (folded streak pill). */
   streak: number;
   /**
-   * Whether today's **Daily Goal** is met — folds the small "goal met"
-   * celebration in (the everyday tier; CONTEXT.md → "Celebration moment").
-   * When not met, the badge is omitted entirely (no separate screen either way).
+   * Whether today's **Daily Goal** is met — folds the everyday-tier celebration
+   * in (CONTEXT.md → "Celebration moment"). Reserved for future surfacing.
    */
   goalMet: boolean;
-  /**
-   * True when a **major milestone** fired this completion — surfaces the
-   * "Đạt mốc lớn? Xem màn ăn mừng →" link into the full-screen Celebration.
-   */
+  /** True when a **major milestone** fired this completion (reserved). */
   hasMilestone?: boolean;
-  /** Below-the-fold discovery suggestions (recommendation target stubbed). */
+  /** Below-the-fold discovery suggestions (reserved; not shown in §10 LP6). */
   discovery?: DiscoverySuggestion[];
   /** One-tap Continue — opens the recommended Next Lesson (preloaded). */
   onContinue: () => void;
-  /** Open a below-the-fold discovery suggestion (stubbed handoff). */
+  /** Open a below-the-fold discovery suggestion (reserved). */
   onOpenDiscovery?: (id: string) => void;
-  /** Open the full-screen Celebration (shown when a major milestone fired). */
+  /** Open the full-screen Celebration (reserved). */
   onCelebrate?: () => void;
-  /** Open the optional 60-second quick review (light SRS). */
+  /** Open the optional 60-second quick review (light SRS) — reserved. */
   onQuickReview?: () => void;
-  /** The guilt-free rest exit ("Nghỉ — hẹn mai 👋"). */
+  /** Share this Lesson-complete moment ("↗ Chia sẻ"). */
+  onShare?: () => void;
+  /** The guilt-free rest exit ("Nghỉ, hẹn mai 👋"). */
   onRest?: () => void;
 }
 
+/** Format an integer with thousands separators (e.g. 1258 → "1,258"). */
+function fmtCount(n: number): string {
+  return Math.round(n).toLocaleString('en-US');
+}
+
+/** Confetti accent flecks scattered over the headline (design `cf` rects). */
+const FLECKS: {x: number; tone: 'flow' | 'warm' | 'flowInk' | 'flowPress'}[] = [
+  {x: 30, tone: 'flow'},
+  {x: 110, tone: 'warm'},
+  {x: 170, tone: 'flowPress'},
+  {x: 215, tone: 'flowInk'},
+  {x: 300, tone: 'warm'},
+];
+
 /**
- * Lesson-complete recap (screens.md §11). The momentum fast-path stays default:
- * above the fold = session recap (minutes studied, Items Absorbed, skill-
- * specific Level) + the animated North Star count-up + the single Top-pick Next
- * Lesson recommendation (Reason + match %) + a one-tap Continue CTA that opens
- * it. Richer discovery sits **below the fold** so scrolling is opt-in
- * (CONTEXT.md → "Discover" / "Preference Tuner").
+ * Lesson-complete recap (screens.md §10 LP6 `Z90VA2`). Celebrates the just-
+ * completed Lesson, leads with the North Star (the headline metric — cumulative
+ * Absorbed Items, recolored amber), then surfaces the single Top-pick Next
+ * Lesson and a one-tap Continue so the momentum fast-path stays default.
  *
  * The recommendation is produced by the engine (`nextLesson`, issue #13); the
  * screen passes it in already resolved + preloaded for one-tap Continue.
@@ -106,45 +118,54 @@ export interface LessonCompleteViewProps {
 export default function LessonCompleteView({
   items,
   decided,
-  minutesStudied,
   skill,
-  skillLevel,
-  skillLevelNext,
   northStarBase,
   northStarLive,
   recommended,
   streak,
-  goalMet,
-  hasMilestone = false,
-  discovery = [],
   onContinue,
-  onOpenDiscovery,
-  onCelebrate,
-  onQuickReview,
+  onShare,
   onRest,
 }: LessonCompleteViewProps) {
   const {t} = useTranslation();
   const colors = useColors();
+  const insets = useSafeAreaInsets();
 
-  const absorbedItems = items.filter(item => decided[item.id] === 'absorbed');
-  const vCount = absorbedItems.filter(i => i.type === 'vocabulary').length;
-  const cCount = absorbedItems.filter(i => i.type === 'chunk').length;
-  const gCount = absorbedItems.filter(i => i.type === 'grammarPoint').length;
+  const absorbedCount = items.filter(
+    item => decided[item.id] === 'absorbed',
+  ).length;
+  const delta = Math.max(0, northStarLive - northStarBase);
 
-  const skillLabel = t(
-    skill === 'listening' ? 'LP_COMPLETE_SKILL_LISTENING' : 'LP_COMPLETE_SKILL_READING',
-  );
+  const toneColor = {
+    flow: colors.flow,
+    warm: colors.warm,
+    flowInk: colors.flowInk,
+    flowPress: colors.flowPress,
+  } as const;
 
-  // North Star count-up (handoff `lpCountUp` — 1228 → 1234 on the recap): seed
-  // the hero counter at the pre-Lesson base, then advance to the live total on
-  // mount so NorthStarCounter ticks it up (it animates on `value` change).
+  // North Star count-up (handoff `lpCountUp` — base → live on the recap).
   const [nsValue, setNsValue] = useState(northStarBase);
   useEffect(() => {
-    setNsValue(northStarLive);
-  }, [northStarLive]);
+    const from = northStarBase;
+    const to = northStarLive;
+    if (from === to) {
+      setNsValue(to);
+      return;
+    }
+    const steps = Math.min(20, Math.max(1, to - from));
+    let i = 0;
+    const timer = setInterval(() => {
+      i += 1;
+      setNsValue(Math.round(from + ((to - from) * i) / steps));
+      if (i >= steps) {
+        clearInterval(timer);
+        setNsValue(to);
+      }
+    }, 55);
+    return () => clearInterval(timer);
+  }, [northStarBase, northStarLive]);
 
-  // Celebratory nsPop on the big North Star number at mount (handoff
-  // `@keyframes nsPop`: scale 1 → 1.12 @40% → 1 over ~600ms).
+  // Celebratory pop on the big North Star number at mount (`nsPop`).
   const nsPop = useSharedValue(1);
   useEffect(() => {
     nsPop.value = withSequence(
@@ -156,7 +177,7 @@ export default function LessonCompleteView({
     transform: [{scale: nsPop.value}],
   }));
 
-  // Brief confetti burst over the completion recap (the everyday celebration).
+  // Brief confetti burst over the recap (the everyday celebration).
   const [confettiActive, setConfettiActive] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setConfettiActive(false), 3500);
@@ -164,218 +185,144 @@ export default function LessonCompleteView({
   }, []);
 
   return (
-    <View style={styles.root}>
-    <ScrollView
-      style={{backgroundColor: colors.appBg}}
-      contentContainerStyle={styles.content}>
-      {/* Daily Goal met — the everyday-tier celebration folded in as a small
-          warm "goal met" badge (no separate screen). Omitted when not met. */}
-      {goalMet ? (
-        <View style={[styles.goalPill, {backgroundColor: colors.warmSoft}]}>
-          <AppText raw style={[styles.goalPillText, {color: colors.warmInk}]}>
-            {t('LP_COMPLETE_GOAL_MET')}
-          </AppText>
-        </View>
-      ) : null}
-      <AppText raw style={styles.emoji}>
-        🎉
-      </AppText>
-      <AppText raw variant="heading2" weight="bold" align="center">
-        {t('LP_COMPLETE_TITLE')}
-      </AppText>
-      <AppText raw align="center" style={[styles.recap, {color: colors.ink2}]}>
-        {t('LP_COMPLETE_RECAP', {
-          count: absorbedItems.length,
-          v: vCount,
-          c: cCount,
-          g: gCount,
-        })}
-      </AppText>
-
-      {/* Session recap stats — minutes studied · Items Absorbed · Level. */}
-      <View style={styles.statsRow}>
-        <View style={[styles.statCard, {backgroundColor: colors.surface, borderColor: colors.hair}]}>
-          <AppText raw style={[styles.statValue, {color: colors.ink}]}>
-            {t('LP_COMPLETE_MINUTES', {count: minutesStudied})}
-          </AppText>
-          <AppText raw style={[styles.statLabel, {color: colors.ink3}]}>
-            {t('LP_COMPLETE_MINUTES_LABEL')}
-          </AppText>
-        </View>
-        <View style={[styles.statCard, {backgroundColor: colors.surface, borderColor: colors.hair}]}>
-          <AppText raw style={[styles.statValue, {color: colors.ink}]}>
-            {absorbedItems.length}
-          </AppText>
-          <AppText raw style={[styles.statLabel, {color: colors.ink3}]}>
-            {t('LP_NORTH_STAR_LABEL')}
-          </AppText>
-        </View>
-      </View>
-
-      {/* Skill-specific Level (Reading or Listening), progressing i+1. */}
-      <View style={[styles.levelCard, {backgroundColor: colors.surface, borderColor: colors.hair}]}>
-        <View style={styles.levelHeaderRow}>
-          <AppText raw style={[styles.levelLabel, {color: colors.ink}]}>
-            {skillLabel} · {skillLevel}
-          </AppText>
-          <AppText raw style={[styles.levelNext, {color: colors.ink3}]}>
-            {t('LP_COMPLETE_LEVEL_NEXT', {next: skillLevelNext})}
-          </AppText>
-        </View>
-      </View>
-
-      {/* North Star recap card — uppercase label, the hero count-up (animates
-          base → live on mount), a teal cumulative-delta line, and a warm
-          streak pill (handoff §11 completion card). */}
-      <View
-        style={[
-          styles.northStarCard,
-          {backgroundColor: colors.surface, borderColor: colors.hair},
-        ]}>
-        <AppText raw style={[styles.northStarLabel, {color: colors.ink3}]}>
-          {t('LP_COMPLETE_NORTH_STAR_LABEL')}
-        </AppText>
-        <Animated.View style={nsPopStyle}>
-          <NorthStarCounter value={nsValue} floatKey={0} />
-        </Animated.View>
-        <AppText raw style={[styles.delta, {color: colors.flowInk}]}>
-          {t('LP_COMPLETE_DELTA', {count: northStarLive - northStarBase})}
-        </AppText>
-        <View style={[styles.streakPill, {backgroundColor: colors.warmSoft}]}>
-          <AppText raw style={[styles.streakPillText, {color: colors.warmInk}]}>
-            {t('LP_COMPLETE_STREAK', {count: streak})}
-          </AppText>
-        </View>
-      </View>
-
-      {/* Top-pick Next Lesson recommendation (Reason + match %) + one-tap
-          Continue, preloaded (screens.md §11; the #core completion frame). */}
-      {recommended ? (
-        <View
-          style={[
-            styles.recoCard,
-            {
-              backgroundColor: colors.flowSoft,
-              borderColor: colors.flow,
-            },
-          ]}>
-          <AppText raw style={[styles.recoLabel, {color: colors.flowInk}]}>
-            {t('LP_COMPLETE_RECO_LABEL')}
-          </AppText>
-          <View style={styles.recoHeaderRow}>
-            <View style={[styles.recoPlay, {backgroundColor: colors.flow}]}>
-              <AppText raw style={[styles.recoPlayIcon, {color: colors.onFlow}]}>
-                ▶
-              </AppText>
-            </View>
-            <View style={styles.recoText}>
-              <AppText
-                raw
-                numberOfLines={1}
-                style={[styles.recoTitle, {color: colors.ink}]}>
-                {recommended.title}
-              </AppText>
-              <AppText
-                raw
-                numberOfLines={1}
-                style={[styles.recoMeta, {color: colors.flowInk}]}>
-                {recommended.meta}
-              </AppText>
-            </View>
-            <AppText raw style={[styles.recoMatch, {color: colors.flowInk}]}>
-              {t('LP_COMPLETE_RECO_MATCH', {pct: recommended.matchPct})}
-            </AppText>
-          </View>
-          <AppText raw style={[styles.recoReason, {color: colors.flowInk}]}>
-            {t('LP_COMPLETE_RECO_REASON', {reason: recommended.reason})}
-          </AppText>
-          <AppButton variant="primary" onPress={onContinue}>
-            <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
-              {t('LP_COMPLETE_CONTINUE')}
-            </AppText>
-          </AppButton>
-        </View>
-      ) : (
-        /* No recommendation available — keep the one-tap Continue alone. */
-        <View style={styles.cta}>
-          <AppButton variant="primary" onPress={onContinue}>
-            <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
-              {t('LP_COMPLETE_CONTINUE')}
-            </AppText>
-          </AppButton>
-        </View>
-      )}
-
-      {/* Major-milestone entry — only when a Streak/Level-up/round North Star
-          fired. Tier 2 lives full-screen, reached from here (handoff §11). */}
-      {hasMilestone ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onCelebrate}
-          style={styles.celebrateLink}>
-          <AppText raw style={[styles.celebrateLinkText, {color: colors.ink3}]}>
-            {t('LP_COMPLETE_MILESTONE_PROMPT')}{' '}
-            <AppText raw style={[styles.celebrateLinkCta, {color: colors.warmInk}]}>
-              {t('LP_COMPLETE_MILESTONE_CTA')}
-            </AppText>
-          </AppText>
-        </Pressable>
-      ) : null}
-
-      {/* Guilt-free exits: optional quick review (light SRS) + rest reminder. */}
-      <View style={styles.exitRow}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onQuickReview}
-          style={[styles.exitBtn, {backgroundColor: colors.surface, borderColor: colors.border}]}>
-          <AppText raw style={[styles.exitText, {color: colors.ink2}]}>
-            {t('LP_COMPLETE_QUICK_REVIEW')}
-          </AppText>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onRest}
-          style={[styles.exitBtn, {backgroundColor: colors.surface, borderColor: colors.border}]}>
-          <AppText raw style={[styles.exitText, {color: colors.ink2}]}>
-            {t('LP_COMPLETE_REST')}
-          </AppText>
-        </Pressable>
-      </View>
-
-      {/* ─── below the fold ─── richer discovery (opt-in by scrolling). */}
-      {discovery.length > 0 ? (
-        <View style={styles.discovery}>
-          <View style={[styles.foldDivider, {backgroundColor: colors.hair}]} />
-          <AppText raw style={[styles.discoveryHeading, {color: colors.ink3}]}>
-            {t('LP_COMPLETE_DISCOVERY_HEADING')}
-          </AppText>
-          {discovery.map(suggestion => (
-            <Pressable
-              key={suggestion.id}
-              accessibilityRole="button"
-              onPress={() => onOpenDiscovery?.(suggestion.id)}
+    <View
+      style={[
+        styles.root,
+        {backgroundColor: colors.appBg, paddingTop: insets.top},
+      ]}>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Confetti flecks scattered across the top. */}
+        <View style={styles.fleckRow}>
+          {FLECKS.map((fleck, i) => (
+            <View
+              key={i}
               style={[
-                styles.discoveryCard,
-                {backgroundColor: colors.surface, borderColor: colors.hair},
-              ]}>
-              <View style={[styles.discoveryPlay, {backgroundColor: colors.flowSoft}]}>
-                <AppText raw style={[styles.discoveryPlayIcon, {color: colors.flowInk}]}>
-                  ▶
-                </AppText>
-              </View>
-              <View style={styles.discoveryText}>
-                <AppText raw numberOfLines={1} style={[styles.discoveryTitle, {color: colors.ink}]}>
-                  {suggestion.title}
-                </AppText>
-                <AppText raw numberOfLines={1} style={[styles.discoveryMeta, {color: colors.flowInk}]}>
-                  {suggestion.meta}
-                </AppText>
-              </View>
-            </Pressable>
+                styles.fleck,
+                {
+                  left: fleck.x,
+                  backgroundColor: toneColor[fleck.tone],
+                },
+              ]}
+            />
           ))}
         </View>
-      ) : null}
-    </ScrollView>
+
+        <AppText raw style={styles.emoji}>
+          🎉
+        </AppText>
+        <AppText raw style={[styles.title, {color: colors.ink}]}>
+          {t('LP_COMPLETE_TITLE_FULL')}
+        </AppText>
+        <AppText raw align="center" style={[styles.headline, {color: colors.ink2}]}>
+          {t(
+            skill === 'listening'
+              ? 'LP_COMPLETE_HEADLINE_LISTENING'
+              : 'LP_COMPLETE_HEADLINE_READING',
+            {count: absorbedCount},
+          )}
+        </AppText>
+
+        {/* North Star card — the headline metric, amber family. */}
+        <View
+          style={[
+            styles.nsCard,
+            {backgroundColor: colors.warmSoft, borderColor: colors.warm},
+          ]}>
+          <AppText raw style={[styles.nsLabel, {color: colors.warmInk}]}>
+            {t('LP_COMPLETE_NS_LABEL')}
+          </AppText>
+          <Animated.View style={nsPopStyle}>
+            <AppText raw style={[styles.nsBig, {color: colors.warmInk}]}>
+              {fmtCount(nsValue)}
+            </AppText>
+          </Animated.View>
+          <AppText raw style={[styles.nsDelta, {color: colors.warmInk}]}>
+            {t('LP_COMPLETE_NS_DELTA', {count: delta})}
+          </AppText>
+          <View style={styles.streakWrap}>
+            <View style={styles.streakPill}>
+              <AppText raw style={[styles.streakText, {color: colors.warmInk}]}>
+                {t('LP_COMPLETE_STREAK', {count: streak})}
+              </AppText>
+            </View>
+          </View>
+        </View>
+
+        {/* Next Lesson recommendation card — "TIẾP THEO · CÙNG KÊNH". */}
+        {recommended ? (
+          <View
+            style={[
+              styles.nextCard,
+              {backgroundColor: colors.flowSoft, borderColor: colors.flow},
+            ]}>
+            <AppText raw style={[styles.nextLabel, {color: colors.flowInk}]}>
+              {t('LP_COMPLETE_NEXT_LABEL')}
+            </AppText>
+            <View style={styles.nextRow}>
+              <View style={[styles.nextPlay, {backgroundColor: colors.flow}]}>
+                <Icon name="Play" className="text-onFlow w-[18px] h-[18px]" />
+              </View>
+              <View style={styles.nextText}>
+                <AppText
+                  raw
+                  numberOfLines={1}
+                  style={[styles.nextTitle, {color: colors.ink}]}>
+                  {recommended.title}
+                </AppText>
+                <AppText
+                  raw
+                  numberOfLines={1}
+                  style={[styles.nextMeta, {color: colors.flowInk}]}>
+                  {recommended.meta}
+                </AppText>
+              </View>
+              <AppText raw style={[styles.nextMatch, {color: colors.flowInk}]}>
+                {t('LP_COMPLETE_RECO_MATCH', {pct: recommended.matchPct})}
+              </AppText>
+            </View>
+          </View>
+        ) : null}
+      </ScrollView>
+
+      {/* Footer: Học tiếp → · [↗ Chia sẻ, Nghỉ, hẹn mai 👋]. */}
+      <View style={[styles.footer, {paddingBottom: 16 + insets.bottom}]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('LP_COMPLETE_CONTINUE')}
+          onPress={onContinue}
+          style={[styles.cta, {backgroundColor: colors.flow}]}>
+          <AppText raw style={[styles.ctaText, {color: colors.onFlow}]}>
+            {t('LP_COMPLETE_CONTINUE')}
+          </AppText>
+        </Pressable>
+        <View style={styles.exitRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('LP_COMPLETE_SHARE')}
+            onPress={onShare}
+            style={[
+              styles.exitBtn,
+              {backgroundColor: colors.surface, borderColor: colors.border},
+            ]}>
+            <AppText raw style={[styles.exitText, {color: colors.ink2}]}>
+              {t('LP_COMPLETE_SHARE')}
+            </AppText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('LP_COMPLETE_REST_SHORT')}
+            onPress={onRest}
+            style={[
+              styles.exitBtn,
+              {backgroundColor: colors.surface, borderColor: colors.border},
+            ]}>
+            <AppText raw style={[styles.exitText, {color: colors.ink2}]}>
+              {t('LP_COMPLETE_REST_SHORT')}
+            </AppText>
+          </Pressable>
+        </View>
+      </View>
+
       {/* Brief celebratory confetti over the recap (auto-stops). */}
       {confettiActive ? <Confetti active={confettiActive} /> : null}
     </View>
@@ -387,152 +334,101 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 48,
+    paddingHorizontal: 22,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
-  goalPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    marginBottom: 16,
+  fleckRow: {height: 22, alignSelf: 'stretch'},
+  fleck: {
+    position: 'absolute',
+    top: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 2,
+    transform: [{rotate: '-20deg'}],
   },
-  goalPillText: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
-  emoji: {fontSize: 40, marginBottom: 8},
-  recap: {fontFamily: InflowFonts.ui.semibold, fontSize: 13.5, marginTop: 6},
-  statsRow: {
-    flexDirection: 'row',
-    alignSelf: 'stretch',
-    gap: 12,
-    marginTop: 22,
+  emoji: {fontSize: 34, marginTop: 8},
+  title: {
+    fontFamily: InflowFonts.ui.extrabold,
+    fontSize: 23,
+    letterSpacing: -0.6,
+    marginTop: 6,
   },
-  statCard: {
-    flex: 1,
-    alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingVertical: 16,
+  headline: {
+    fontFamily: InflowFonts.ui.regular,
+    fontSize: 14,
+    lineHeight: 21,
+    marginTop: 8,
+    maxWidth: 290,
   },
-  statValue: {fontFamily: InflowFonts.ui.extrabold, fontSize: 22, letterSpacing: -0.4},
-  statLabel: {fontFamily: InflowFonts.ui.semibold, fontSize: 11, marginTop: 4},
-  levelCard: {
-    alignSelf: 'stretch',
-    borderRadius: 15,
-    borderWidth: 1,
-    paddingVertical: 13,
-    paddingHorizontal: 15,
-    marginTop: 12,
-  },
-  levelHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  levelLabel: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
-  levelNext: {fontFamily: InflowFonts.ui.semibold, fontSize: 12.5},
-  northStarCard: {
+  nsCard: {
     alignSelf: 'stretch',
     alignItems: 'center',
     borderRadius: 20,
     borderWidth: 1,
-    paddingVertical: 22,
-    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 18,
+    paddingHorizontal: 16,
     marginTop: 18,
   },
-  northStarLabel: {
-    fontFamily: InflowFonts.ui.extrabold,
+  nsLabel: {
+    fontFamily: InflowFonts.ui.bold,
     fontSize: 11,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: 8,
+    letterSpacing: 1,
   },
-  delta: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5, marginTop: 8},
+  nsBig: {
+    fontFamily: InflowFonts.ui.extrabold,
+    fontSize: 50,
+    letterSpacing: -2,
+    lineHeight: 56,
+  },
+  nsDelta: {fontFamily: InflowFonts.ui.bold, fontSize: 13},
+  streakWrap: {paddingTop: 12, alignItems: 'center'},
   streakPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 9,
-    marginTop: 12,
+    backgroundColor: '#FFFFFF66',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
   },
-  streakPillText: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
-  cta: {alignSelf: 'stretch', marginTop: 24},
-  ctaText: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
-  recoCard: {
+  streakText: {fontFamily: InflowFonts.ui.bold, fontSize: 12},
+  nextCard: {
     alignSelf: 'stretch',
     borderRadius: 18,
     borderWidth: 1,
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 16,
-    marginTop: 20,
+    marginTop: 16,
   },
-  recoLabel: {
+  nextLabel: {
     fontFamily: InflowFonts.ui.extrabold,
     fontSize: 10.5,
     letterSpacing: 1,
-    textTransform: 'uppercase',
     marginBottom: 10,
   },
-  recoHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 11,
-    marginBottom: 11,
-  },
-  recoPlay: {
-    width: 42,
-    height: 42,
-    borderRadius: 13,
+  nextRow: {flexDirection: 'row', alignItems: 'center', gap: 11},
+  nextPlay: {
+    width: 46,
+    height: 46,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  recoPlayIcon: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
-  recoText: {flex: 1, minWidth: 0},
-  recoTitle: {fontFamily: InflowFonts.ui.bold, fontSize: 14.5},
-  recoMeta: {fontFamily: InflowFonts.ui.semibold, fontSize: 11.5, marginTop: 2},
-  recoMatch: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
-  recoReason: {fontFamily: InflowFonts.ui.semibold, fontSize: 12, marginBottom: 12},
-  celebrateLink: {alignSelf: 'center', marginTop: 16},
-  celebrateLinkText: {fontFamily: InflowFonts.ui.semibold, fontSize: 12.5},
-  celebrateLinkCta: {fontFamily: InflowFonts.ui.bold, fontSize: 12.5},
-  exitRow: {flexDirection: 'row', alignSelf: 'stretch', gap: 10, marginTop: 16},
+  nextText: {flex: 1, minWidth: 0, gap: 1},
+  nextTitle: {fontFamily: InflowFonts.ui.bold, fontSize: 14.5},
+  nextMeta: {fontFamily: InflowFonts.ui.regular, fontSize: 11.5},
+  nextMatch: {fontFamily: InflowFonts.ui.extrabold, fontSize: 11.5},
+  footer: {paddingHorizontal: 22, paddingTop: 12, paddingBottom: 16, gap: 10},
+  cta: {borderRadius: 16, paddingVertical: 16, alignItems: 'center'},
+  ctaText: {fontFamily: InflowFonts.ui.bold, fontSize: 16},
+  exitRow: {flexDirection: 'row', gap: 10},
   exitBtn: {
     flex: 1,
     alignItems: 'center',
     borderRadius: 14,
     borderWidth: 1,
-    paddingVertical: 14,
+    paddingVertical: 13,
   },
   exitText: {fontFamily: InflowFonts.ui.bold, fontSize: 14},
-  discovery: {alignSelf: 'stretch', marginTop: 28},
-  foldDivider: {height: 1, alignSelf: 'stretch', marginBottom: 18},
-  discoveryHeading: {
-    fontFamily: InflowFonts.ui.extrabold,
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 12,
-  },
-  discoveryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 11,
-    borderRadius: 15,
-    borderWidth: 1,
-    padding: 12,
-    marginBottom: 10,
-  },
-  discoveryPlay: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  discoveryPlayIcon: {fontFamily: InflowFonts.ui.bold, fontSize: 15},
-  discoveryText: {flex: 1, minWidth: 0},
-  discoveryTitle: {fontFamily: InflowFonts.ui.bold, fontSize: 14.5},
-  discoveryMeta: {fontFamily: InflowFonts.ui.semibold, fontSize: 11.5, marginTop: 2},
 });
 
 LessonCompleteView.displayName = 'LessonCompleteView';

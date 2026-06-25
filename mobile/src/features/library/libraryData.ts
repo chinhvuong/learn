@@ -109,7 +109,9 @@ export const LIBRARY_DATA: LibraryData = {
       progressLabel: '60%',
     },
     {
-      lessonId: 'daily-english-12',
+      // Routes to the bundled Golden Audio Lesson so the Library's audio entry
+      // opens the §10 Listening Replay player (LP4 Xem & Nghe / Nghe — Podcast).
+      lessonId: 'golden-audio-lesson',
       title: 'Daily English · tập 12',
       emoji: '🎧',
       subtitle: 'Podcast · nghe',
