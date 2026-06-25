@@ -40,6 +40,10 @@ export type RootStackParamList = {
   // exits. Carries the selected prompts (Item + answer); never a due-queue, no
   // red debt badge (CONTEXT.md → "SRS"; issue #14).
   QuickReview: {prompts: QuickReviewPrompt[]};
+  // My Library (Thư viện của tôi) — the learner's own Lessons, grouped
+  // (screens.md §08b; design node y5RJTT). Reached from the Home "Thư viện của
+  // tôi" row, presented over the tab shell.
+  MyLibrary: undefined;
   // Legacy boilerplate / design-system demo routes (kept reachable).
   Settings: undefined;
   ComponentsDemo: undefined;

@@ -8,6 +8,7 @@ import LessonPlayerScreen from "@/screens/lesson/LessonPlayerScreen.tsx";
 import CelebrationScreen from "@/screens/gamification/CelebrationScreen.tsx";
 import QuickReviewScreen from "@/screens/gamification/QuickReviewScreen.tsx";
 import SettingsScreen from "@/screens/SettingsScreen";
+import MyLibraryScreen from "@/screens/tabs/MyLibraryScreen.tsx";
 import ComponentsDemo from "@/screens/ComponentsDemo";
 import DesignSystemScreen from "@/screens/DesignSystemScreen";
 import CustomScreenHeader from "@/navigation/components/ScreenHeader.tsx";
@@ -82,6 +83,13 @@ export default function RootStackNavigator() {
         component={SettingsScreen}
         options={{
           title: "Settings",
+        }}
+      />
+      <Stack.Screen
+        name="MyLibrary"
+        component={MyLibraryScreen}
+        options={{
+          headerShown: false,
         }}
       />
       <Stack.Screen
