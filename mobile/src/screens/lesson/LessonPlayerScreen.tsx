@@ -61,7 +61,7 @@ export default function LessonPlayerScreen({route}: Props) {
   const navigation = useNavigation<Props['navigation']>();
   const dispatch = useAppDispatch();
   const {t} = useTranslation();
-  const {lessonId} = route.params ?? {};
+  const {lessonId, onboarding} = route.params ?? {};
 
   // Only the two bundled Lessons exist today; a real lookup by `lessonId`
   // arrives with the lesson API. Route to the audio Lesson when asked for it.
@@ -107,6 +107,15 @@ export default function LessonPlayerScreen({route}: Props) {
       return;
     }
     recorded.current = true;
+    // Onboarding's Golden First Lesson runs *before* signup: its result is
+    // committed as anonymous progress by the onboarding flow (the Reading Level
+    // screen's return handler → Result), not folded into the account's Home
+    // gamification here. So skip the core-loop recording and hand back to the
+    // Onboarding stack, which resumes Result → Signup → Push → Main.
+    if (onboarding) {
+      navigation.goBack();
+      return;
+    }
     const absorbed = countAbsorbed(session);
     const byType = {
       vocabulary: lesson.items.filter(

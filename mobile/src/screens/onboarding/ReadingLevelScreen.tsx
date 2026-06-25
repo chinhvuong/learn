@@ -100,7 +100,13 @@ export default function ReadingLevelScreen() {
 
   const startGoldenLesson = () => {
     awaitingLesson.current = true;
-    navigation.getParent()?.navigate("LessonPlayer", {lessonId: GOLDEN_FIRST_LESSON.id});
+    // `onboarding: true` tells the Player to hand back here on completion (vs.
+    // the core-loop Lesson-complete view) so this screen's focus handler can
+    // commit the anonymous progress and advance to Result.
+    navigation.getParent()?.navigate("LessonPlayer", {
+      lessonId: GOLDEN_FIRST_LESSON.id,
+      onboarding: true,
+    });
   };
 
   return (

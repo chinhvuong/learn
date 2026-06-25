@@ -31,7 +31,11 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main?: NavigatorScreenParams<MainTabParamList>;
-  LessonPlayer: {lessonId?: string} | undefined;
+  // `onboarding: true` marks the Golden First Lesson launched from the
+  // onboarding Reading Level step — on completion the Player hands back to the
+  // Onboarding "Result" recap (Result → Signup → Push → Main) instead of the
+  // core-loop Lesson-complete view (PRD stories 6–8; OnboardingStackNavigator).
+  LessonPlayer: {lessonId?: string; onboarding?: boolean} | undefined;
   // Full-screen major-milestone Celebration (Streak / Level up / round North
   // Star) — reachable from completion and from tapping a Profile trophy. The
   // milestone is a plain serializable object (issue #14, screens.md §12/§14b).
