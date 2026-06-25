@@ -57,6 +57,16 @@ export type RootStackParamList = {
   // (screens.md §08b; design node y5RJTT). Reached from the Home "Thư viện của
   // tôi" row, presented over the tab shell.
   MyLibrary: undefined;
+  // Series — Browse (Khám phá Series) and Detail (§05 sBjQE; design nodes
+  // rl7cV / e4eYZ). Browse lists curated Series; Detail opens one Series'
+  // ordered Lessons. Reached from the Home "Khám phá Series" row, presented
+  // over the tab shell.
+  SeriesBrowse: undefined;
+  SeriesDetail: {seriesId: string};
+  // Daily Goal met — Streak moment (§05; design node j2fWf). The everyday
+  // Daily-Goal tier shown as a standalone Streak celebration. `streak` is the
+  // consecutive-days count rendered in the ring.
+  DailyGoal: {streak: number};
   // Legacy boilerplate / design-system demo routes (kept reachable).
   Settings: undefined;
   ComponentsDemo: undefined;

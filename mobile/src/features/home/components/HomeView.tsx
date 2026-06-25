@@ -24,6 +24,8 @@ export interface HomeViewProps {
   onOpenRecommended?: (lesson: HomeLessonRef) => void;
   /** Open the learner's My Library screen (the "Thư viện của tôi" row). */
   onOpenLibrary?: () => void;
+  /** Open the Series browser (the "Khám phá Series" row). */
+  onOpenSeries?: () => void;
   /** Open the Settings screen (the gear in the header). */
   onOpenSettings?: () => void;
 }
@@ -54,6 +56,7 @@ export default function HomeView({
   onContinue,
   onOpenRecommended,
   onOpenLibrary,
+  onOpenSeries,
   onOpenSettings,
 }: HomeViewProps) {
   const insets = useSafeAreaInsets();
@@ -355,6 +358,7 @@ export default function HomeView({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t('HOME_SERIES_TITLE')}
+        onPress={onOpenSeries}
         className="flex-row items-center rounded-2xl bg-surface border border-hair p-3.5 active:opacity-80"
         style={{gap: 12}}>
         <View className="w-[38px] h-[38px] rounded-xl items-center justify-center bg-flow-soft">

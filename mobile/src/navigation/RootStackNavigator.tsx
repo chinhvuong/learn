@@ -7,8 +7,11 @@ import OnboardingStackNavigator from "./OnboardingStackNavigator";
 import LessonPlayerScreen from "@/screens/lesson/LessonPlayerScreen.tsx";
 import CelebrationScreen from "@/screens/gamification/CelebrationScreen.tsx";
 import QuickReviewScreen from "@/screens/gamification/QuickReviewScreen.tsx";
+import DailyGoalScreen from "@/screens/gamification/DailyGoalScreen.tsx";
 import SettingsScreen from "@/screens/SettingsScreen";
 import MyLibraryScreen from "@/screens/tabs/MyLibraryScreen.tsx";
+import SeriesBrowseScreen from "@/screens/series/SeriesBrowseScreen.tsx";
+import SeriesDetailScreen from "@/screens/series/SeriesDetailScreen.tsx";
 import ComponentsDemo from "@/screens/ComponentsDemo";
 import DesignSystemScreen from "@/screens/DesignSystemScreen";
 import CustomScreenHeader from "@/navigation/components/ScreenHeader.tsx";
@@ -90,6 +93,28 @@ export default function RootStackNavigator() {
         component={MyLibraryScreen}
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="SeriesBrowse"
+        component={SeriesBrowseScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="SeriesDetail"
+        component={SeriesDetailScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="DailyGoal"
+        component={DailyGoalScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
         }}
       />
       <Stack.Screen
