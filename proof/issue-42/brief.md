@@ -22,6 +22,17 @@ Each screen re-themes light/dark automatically because every color is a token (t
 - **Welcome background glow/sparkle dots** from the .pen (decorative radial glow + 2 spark ellipses) are approximated by the gradient wash; the load-bearing hero elements (card, chips, annotation) are reproduced faithfully.
 - **Login/Register** keep the existing `AppInput`/zod form logic (real validation) under the design's refreshed chrome; the .pen shows static field mocks only.
 
+## End-to-end flow fix (Golden First Lesson → Onboarding Result)
+
+The first pass had the Reading Level → Golden First Lesson → Result hand-off broken: launching the Golden First Lesson on the root `LessonPlayer` always ended in the **core-loop** `LessonCompleteView` ("Hoàn thành! … Học tiếp →"), whose CTA pushed *another* lesson — so the onboarding Result (`N5NT6Z`), Signup (`a21pD`) and Push priming (`JvIDh`) were unreachable through the flow.
+
+Fix (contained, threaded via one route param):
+- `navigation/types.ts` — `LessonPlayer` params gain `onboarding?: boolean`.
+- `screens/onboarding/ReadingLevelScreen.tsx` — launches the Golden First Lesson with `{lessonId, onboarding: true}`. Its existing `focus` handler (commits anonymous progress via `commitGoldenLessonProgress`, then `navigate("Result")`) now reliably resumes the flow.
+- `screens/lesson/LessonPlayerScreen.tsx` (lesson-player file — touched minimally) — on reaching `complete` with `onboarding` set, it **skips** the core-loop `recordLessonCompletion` (anonymous progress belongs to onboarding, not Home gamification pre-signup) and `goBack()`s to dismiss the modal, so the Onboarding stack regains focus and advances Result → Signup → Push → Main. Non-onboarding lessons are completely unchanged (still render `LessonCompleteView`).
+
+Verified chain wiring: Result `Tiếp tục` → `Signup`; Signup provider/email → `PushPriming`; PushPriming `Bật thông báo`/`Để sau` → `reset({routes:[{name:"Main"}]})`. The full chain **Welcome → Topics → Reading Level → [Golden First Lesson] → Result → Signup/Login → Push priming → Main** is now navigable end to end.
+
 ## Verification
 
 - `tsc --noEmit`: clean (exit 0, no errors).
