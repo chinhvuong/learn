@@ -38,9 +38,9 @@ export interface CreateState {
 }
 
 const initialState: CreateState = {
-  // Free Plan default: 3 of 5 used → 2 remaining (matches the §13 wireframe's
-  // "Credit tháng ●●●○○ 3/5" placeholder until Home/Profile owns the balance).
-  creditsRemaining: 2,
+  // Free Plan default: 3 of 5 remaining (matches design 13a/13b's
+  // "●●●○○ 3/5" Credit indicator until Home/Profile owns the balance).
+  creditsRemaining: 3,
   creditsTotal: 5,
   phase: 'idle',
   createdLessonId: null,
