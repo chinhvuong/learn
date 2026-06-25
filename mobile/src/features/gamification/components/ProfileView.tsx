@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 import {AppText} from '@/components/ui';
@@ -21,6 +22,20 @@ export interface ProfileViewProps {
 
 /** A faux 14-day streak history for the calendar heat row (display only). */
 const STREAK_DAYS = [0.4, 0.5, 0, 0.6, 0.8, 1, 0.5, 0, 0.7, 1, 1, 0.8, 1, 1];
+
+/**
+ * Convert a `#rrggbb` token to an `rgba()` string at the given alpha — used for
+ * the design's `color-mix(... 22%, transparent)` style tinted borders that
+ * NativeWind tokens can't express directly. Tokens are hex strings, so this
+ * stays inside the "derive from colors.*" rule.
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 /**
  * Hồ sơ / Stats (tab Hồ sơ) — the **trophy case first** (screens.md §14; handoff
@@ -119,8 +134,55 @@ export default function ProfileView({
         </Pressable>
       </View>
 
-      {/* North Star hero (amber) + per-type breakdown */}
-      <View style={[styles.northStar, {backgroundColor: colors.warmSoft, borderColor: colors.warm}]}>
+      {/* Go Pro upsell — flow→flow-press gradient card (design #profile). */}
+      <Pressable
+        accessibilityRole="button"
+        onPress={onOpenSettings}
+        style={styles.goPro}>
+        <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Defs>
+            <LinearGradient id="goProBg" x1="0" y1="0" x2="1" y2="1">
+              <Stop offset="0" stopColor={colors.flow} stopOpacity={1} />
+              <Stop offset="1" stopColor={colors.flowPress} stopOpacity={1} />
+            </LinearGradient>
+          </Defs>
+          <Rect x="0" y="0" width="100%" height="100%" rx={18} fill="url(#goProBg)" />
+        </Svg>
+        <View style={[styles.goProIcon, {backgroundColor: hexToRgba('#ffffff', 0.2)}]}>
+          <AppText raw style={styles.goProIconText}>
+            ✦
+          </AppText>
+        </View>
+        <View style={styles.goProText}>
+          {/* TODO(i18n): temporary inline copy — needs PROFILE_PRO_TITLE key */}
+          <AppText raw style={[styles.goProTitle, {color: colors.onFlow}]}>
+            Inflow Pro
+          </AppText>
+          {/* TODO(i18n): temporary inline copy — needs PROFILE_PRO_SUB key */}
+          <AppText raw style={[styles.goProSub, {color: colors.onFlow}]}>
+            Tạo không giới hạn · mọi Series · nghe podcast
+          </AppText>
+        </View>
+        <View style={[styles.goProBtn, {backgroundColor: colors.onFlow}]}>
+          {/* TODO(i18n): temporary inline copy — needs PROFILE_PRO_CTA key */}
+          <AppText raw style={[styles.goProBtnText, {color: colors.flowInk}]}>
+            Go Pro
+          </AppText>
+        </View>
+      </Pressable>
+
+      {/* North Star hero (amber) + per-type breakdown — warm-soft→surface
+          gradient with a warm-tinted hairline (design #profile). */}
+      <View style={[styles.northStar, {borderColor: hexToRgba(colors.warm, 0.22)}]}>
+        <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Defs>
+            <LinearGradient id="northStarBg" x1="0" y1="0" x2="0.35" y2="1">
+              <Stop offset="0" stopColor={colors.warmSoft} stopOpacity={1} />
+              <Stop offset="1" stopColor={colors.surface} stopOpacity={0.75} />
+            </LinearGradient>
+          </Defs>
+          <Rect x="0" y="0" width="100%" height="100%" rx={20} fill="url(#northStarBg)" />
+        </Svg>
         <AppText
           raw
           accessibilityRole="text"
@@ -219,6 +281,29 @@ export default function ProfileView({
         })}
       </View>
 
+      {/* My Library — every Lesson & Series the learner created (design #profile). */}
+      <Pressable
+        accessibilityRole="button"
+        onPress={onOpenCollection}
+        style={[styles.library, {backgroundColor: colors.surface, borderColor: colors.hair}]}>
+        <AppText raw style={styles.collectionEmoji}>
+          📖
+        </AppText>
+        <View style={styles.collectionText}>
+          {/* TODO(i18n): temporary inline copy — needs PROFILE_LIBRARY_TITLE key */}
+          <AppText raw style={[styles.collectionTitle, {color: colors.ink}]}>
+            Thư viện của tôi
+          </AppText>
+          {/* TODO(i18n): temporary inline copy — needs PROFILE_LIBRARY_SUB key */}
+          <AppText raw style={[styles.collectionSub, {color: colors.ink3}]}>
+            Mọi bài & series · bạn tự tạo
+          </AppText>
+        </View>
+        <AppText raw style={[styles.collectionArrow, {color: colors.ink3}]}>
+          →
+        </AppText>
+      </Pressable>
+
       {/* My Collection — the secondary door */}
       <Pressable
         accessibilityRole="button"
@@ -252,6 +337,23 @@ const styles = StyleSheet.create({
   subhandle: {fontFamily: InflowFonts.ui.medium, fontSize: 12, marginTop: 1},
   gear: {width: 34, height: 34, borderRadius: 11, borderWidth: 1, alignItems: 'center', justifyContent: 'center'},
   gearIcon: {fontSize: 15},
+  goPro: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  goProIcon: {width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center'},
+  goProIconText: {fontSize: 20},
+  goProText: {flex: 1, minWidth: 0},
+  goProTitle: {fontFamily: InflowFonts.ui.extrabold, fontSize: 15.5},
+  goProSub: {fontFamily: InflowFonts.ui.medium, fontSize: 11.5, lineHeight: 16, marginTop: 3, opacity: 0.85},
+  goProBtn: {paddingVertical: 10, paddingHorizontal: 15, borderRadius: 11},
+  goProBtnText: {fontFamily: InflowFonts.ui.extrabold, fontSize: 13},
   northStar: {
     alignItems: 'center',
     paddingVertical: 20,
@@ -259,6 +361,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     marginBottom: 16,
+    overflow: 'hidden',
   },
   northStarNumber: {fontFamily: InflowFonts.ui.extrabold, fontSize: 56, letterSpacing: -2, lineHeight: 58},
   breakdownRow: {flexDirection: 'row', gap: 13, marginTop: 10},
@@ -290,6 +393,16 @@ const styles = StyleSheet.create({
   trophy: {flex: 1, paddingVertical: 13, paddingHorizontal: 8, borderRadius: 13, alignItems: 'center'},
   trophyEmoji: {fontSize: 18},
   trophyLabel: {fontFamily: InflowFonts.ui.bold, fontSize: 11, marginTop: 3},
+  library: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 9,
+  },
   collection: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -373,11 +373,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     padding: 22,
+    // Design uses shadow-md, not shadow-lg — soften the card lift.
     shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: {width: 0, height: 12},
-    elevation: 12,
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: {width: 0, height: 4},
+    elevation: 5,
   },
   kindPill: {
     alignSelf: 'flex-start',
@@ -393,6 +394,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   headwordRow: {flexDirection: 'row', alignItems: 'baseline', gap: 9, flexWrap: 'wrap'},
+  // Design headword weight is 600; Newsreader's nearest step is medium (500).
   headword: {fontFamily: InflowFonts.reading.medium, fontSize: 30, letterSpacing: -0.4},
   pos: {fontFamily: InflowFonts.ui.bold, fontSize: 11},
   ipa: {

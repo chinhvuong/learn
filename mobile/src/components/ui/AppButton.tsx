@@ -16,7 +16,7 @@ interface AppButtonProps extends PressableProps {
 }
 
 const buttonVariants = cva(
-  "flex-row items-center justify-center px-4 gap-2 rounded-xl text-sm font-medium",
+  "flex-row items-center justify-center px-4 gap-2 rounded-[14px] text-sm font-medium",
   {
     variants: {
       isMenu: {
@@ -24,8 +24,8 @@ const buttonVariants = cva(
       },
       variant: {
         default: "bg-neutrals800 text-foreground font-semibold shadow",
-        primary: "bg-primary text-primary-foreground font-semibold shadow",
-        secondary: "bg-secondary text-secondary-foreground font-semibold shadow",
+        primary: "bg-primary text-primary-foreground font-semibold rounded-2xl",
+        secondary: "bg-secondary text-secondary-foreground font-semibold rounded-2xl",
         ghost: "bg-transparent text-foreground font-semibold hover:bg-neutrals900",
         outline: "bg-transparent text-foreground font-semibold border border-neutrals700 hover:bg-neutrals900",
         link: "bg-transparent text-primary font-semibold underline"
@@ -125,6 +125,25 @@ export default function AppButton(props: AppButtonProps) {
     };
   });
 
+  // Primary CTA carries a teal drop shadow (design: 0 10px 22px -8px var(--flow)).
+  const shadowStyle =
+    variant === 'primary' || variant === 'secondary'
+      ? {
+          shadowColor: colors.flow,
+          shadowOpacity: 0.34,
+          shadowRadius: 14,
+          shadowOffset: {width: 0, height: 8},
+          elevation: 6,
+        }
+      : undefined;
+
+  const loaderColor =
+    variant === 'primary' || variant === 'secondary'
+      ? colors.primaryForeground
+      : variant === 'default'
+        ? colors.foreground
+        : colors.primary;
+
   const handlePressIn = () => {
     scale.value = withSpring(0.95, {damping: 15, stiffness: 300});
     if (variant === 'ghost' || variant === 'outline' || variant === 'link') {
@@ -146,7 +165,7 @@ export default function AppButton(props: AppButtonProps) {
 
   return (
     <AnimatedPressable
-      style={animatedStyle}
+      style={[animatedStyle, shadowStyle]}
       className={cn(
         buttonVariants({variant, size, disabled: isDisabled, loading}),
         className
@@ -160,7 +179,7 @@ export default function AppButton(props: AppButtonProps) {
       {loading && (
         <ActivityIndicator
           size="small"
-          color={variant === 'ghost' || variant === 'outline' || variant === 'link' ? '#e85a5a' : '#ffffff'}
+          color={loaderColor}
         />
       )}
       {!loading && props.icon && React.cloneElement(props.icon as any, {

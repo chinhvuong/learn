@@ -1,8 +1,16 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Text, TextProps} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import {useColors} from '@/hooks/useColors';
 import {useAppSelector} from '@/store/hooks';
 import {itemTokenStyle, type ItemKind, type ReadingSpanKind} from './itemTokenStyle';
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 export type {ItemKind, ReadingSpanKind};
 
@@ -37,10 +45,34 @@ export default function ItemToken({
 
   const tokenStyle = itemTokenStyle(kind, absorbed, showAnnotations, colors);
 
+  // tokPop (handoff `@keyframes tokPop`: scale 1 → 1.16 @35% → 1 over .55s):
+  // fire the scale pop only on the *absorb transition* (teal → amber), never on
+  // re-taps. RN renders Item tokens as INLINE text, and inline Text can't be
+  // wrapped in an Animated.View without breaking the passage's text flow; a
+  // `transform` on an inline `Animated.Text` is the closest faithful carrier of
+  // the pop within that constraint (it may be visually subtle inline on some
+  // platforms, but it's keyed correctly to the single absorb event).
+  const pop = useSharedValue(1);
+  const wasAbsorbed = useRef(absorbed);
+  useEffect(() => {
+    if (absorbed && !wasAbsorbed.current) {
+      // 0.55s total: up to 1.16 by ~35% (~190ms), back to 1 by the end.
+      pop.value = withSequence(
+        withTiming(1.16, {duration: 190}),
+        withTiming(1, {duration: 360}),
+      );
+    }
+    wasAbsorbed.current = absorbed;
+  }, [absorbed, pop]);
+
+  const popStyle = useAnimatedStyle(() => ({
+    transform: [{scale: pop.value}],
+  }));
+
   return (
-    <Text {...props} style={[tokenStyle, style]}>
+    <AnimatedText {...props} style={[tokenStyle, style, popStyle]}>
       {children}
-    </Text>
+    </AnimatedText>
   );
 }
 

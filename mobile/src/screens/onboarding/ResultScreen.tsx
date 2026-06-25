@@ -3,11 +3,22 @@ import {Pressable, ScrollView, View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
+import Svg, {Defs, LinearGradient, Rect, Stop} from "react-native-svg";
 import {AppButton, AppText} from "@/components/ui";
+import {useColors} from "@/hooks/useColors.ts";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
 import {setDailyGoal} from "@/features/onboarding/onboardingSlice.ts";
 import {DAILY_GOAL_PRESETS} from "@/config/onboarding.ts";
+
+/** Expand a #rrggbb token into an rgba() string at the given alpha. */
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 /**
  * Kết quả + Daily Goal — the result screen shown right after the Golden First
@@ -21,6 +32,7 @@ export default function ResultScreen() {
   const {t} = useTranslation();
   const navigation = useNavigation<OnboardingNavigationProp>();
   const dispatch = useAppDispatch();
+  const colors = useColors();
 
   const {absorbedTotal, breakdown} = useAppSelector(s => s.onboarding.anonymousProgress);
   const dailyGoalMinutes = useAppSelector(s => s.onboarding.dailyGoalMinutes);
@@ -37,12 +49,29 @@ export default function ResultScreen() {
           ONBOARDING_RESULT_TITLE
         </AppText>
 
-        {/* North Star jump card (amber `--warm`). */}
-        <View className={"rounded-3xl bg-warm-soft px-5 py-6 mb-5 items-center"}>
+        {/* North Star jump card (amber `--warm`): gradient fill + warm border. */}
+        <View
+          className={"rounded-[20px] px-5 py-6 mb-5 items-center overflow-hidden"}
+          style={{borderWidth: 1, borderColor: hexToRgba(colors.warm, 0.2)}}
+        >
+          <Svg style={{position: "absolute", top: 0, left: 0, right: 0, bottom: 0}}>
+            <Defs>
+              <LinearGradient id="northStarFill" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={colors.warmSoft} stopOpacity={1}/>
+                <Stop offset="1" stopColor={colors.surface} stopOpacity={1}/>
+              </LinearGradient>
+            </Defs>
+            <Rect x={0} y={0} width={"100%"} height={"100%"} rx={20} ry={20} fill="url(#northStarFill)"/>
+          </Svg>
           <AppText variant={"overline"} className={"text-warm-ink"} raw>
             {t("ONBOARDING_RESULT_NORTH_STAR")}
           </AppText>
-          <AppText weight={"bold"} align={"center"} className={"text-warm-ink text-5xl my-1"} raw>
+          <AppText
+            align={"center"}
+            className={"font-sans-extrabold text-warm my-1"}
+            style={{fontSize: 58, lineHeight: 62, letterSpacing: -2}}
+            raw
+          >
             {absorbedTotal}
           </AppText>
           <AppText variant={"bodySmall"} weight={"bold"} className={"text-warm-ink"} raw>

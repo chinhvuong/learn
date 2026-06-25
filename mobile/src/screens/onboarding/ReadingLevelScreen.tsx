@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
 import {AppButton, AppText} from "@/components/ui";
+import {useColors} from "@/hooks/useColors.ts";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
 import {commitGoldenLessonProgress, setReadingLevel} from "@/features/onboarding/onboardingSlice.ts";
@@ -47,6 +48,7 @@ export default function ReadingLevelScreen() {
   const {t} = useTranslation();
   const navigation = useNavigation<OnboardingNavigationProp>();
   const dispatch = useAppDispatch();
+  const colors = useColors();
 
   const readingLevelSource = useAppSelector(s => s.onboarding.readingLevelSource);
   const readingLevel = useAppSelector(s => s.onboarding.readingLevel);
@@ -119,9 +121,20 @@ export default function ReadingLevelScreen() {
               <Pressable
                 key={option.id}
                 onPress={() => select(option.id)}
-                className={`flex-row gap-3 p-4 rounded-2xl border ${
+                className={`flex-row gap-3 p-4 rounded-2xl border-[1.5px] ${
                   isSelected ? "bg-flow-soft border-flow" : "bg-surface border-border"
                 }`}
+                style={
+                  isSelected
+                    ? {
+                        shadowColor: colors.flow,
+                        shadowOpacity: 0.18,
+                        shadowRadius: 16,
+                        shadowOffset: {width: 0, height: 6},
+                        elevation: 3,
+                      }
+                    : undefined
+                }
               >
                 <View
                   className={`w-5 h-5 rounded-full border-2 mt-0.5 items-center justify-center ${

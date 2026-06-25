@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {Animated, Easing, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg';
 import {useTranslation} from 'react-i18next';
 import {AppText} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
@@ -41,6 +42,14 @@ export default function LevelUpView({
   const colors = useColors();
   const skillLabel = skill === 'reading' ? t('LEVELUP_SKILL_READING') : t('LEVELUP_SKILL_LISTENING');
 
+  // Render the title with only the skill word in teal (flow-ink), the rest in
+  // ink — matching the design (`Kỹ năng <flow>Nghe</flow> đã lên B1!`). We
+  // interpolate with a unique sentinel for the skill, then split around it so
+  // the visible sentence reads identically to LEVELUP_TITLE.
+  const SKILL_TOKEN = '\u0000';
+  const titleRaw = t('LEVELUP_TITLE', {skill: SKILL_TOKEN, band: toBand});
+  const [titleBefore, titleAfter = ''] = titleRaw.split(SKILL_TOKEN);
+
   // nsPop on the new-band badge.
   const pop = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -58,7 +67,18 @@ export default function LevelUpView({
   };
 
   return (
-    <View style={[styles.root, {backgroundColor: colors.flowSoft}]}>
+    <View style={[styles.root, {backgroundColor: colors.appBg}]}>
+      {/* Takeover gradient: flow-soft tint at top → app-bg at bottom (design
+          `linear-gradient(180deg, flow-soft 70% → app-bg)`). */}
+      <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Defs>
+          <LinearGradient id="levelUpBg" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={colors.flowSoft} stopOpacity={0.7} />
+            <Stop offset="1" stopColor={colors.appBg} stopOpacity={1} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#levelUpBg)" />
+      </Svg>
       <Confetti />
       <ScrollView
         contentContainerStyle={styles.content}
@@ -103,7 +123,11 @@ export default function LevelUpView({
         </View>
 
         <AppText raw align="center" style={[styles.title, {color: colors.ink}]}>
-          {t('LEVELUP_TITLE', {skill: skillLabel, band: toBand})}
+          {titleBefore}
+          <AppText raw style={[styles.title, {color: colors.flowInk}]}>
+            {skillLabel}
+          </AppText>
+          {titleAfter}
         </AppText>
         <AppText raw align="center" style={[styles.body, {color: colors.ink2}]}>
           {t('LEVELUP_BODY', {band: fromBand})}

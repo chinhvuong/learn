@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
+import Animated, {Easing, withTiming} from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 import {AppText, Icon} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
@@ -27,7 +28,8 @@ export default function ItemMeaningCard({item, onClose}: ItemMeaningCardProps) {
   const colors = useColors();
 
   return (
-    <View
+    <Animated.View
+      entering={cardEntering}
       style={[
         styles.card,
         {backgroundColor: colors.surface, borderColor: colors.border},
@@ -142,9 +144,30 @@ export default function ItemMeaningCard({item, onClose}: ItemMeaningCardProps) {
           </AppText>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
+
+/**
+ * floatPop entrance (handoff `@keyframes floatPop`: opacity 0 → 1, translateY
+ * 8 → 0, scale 0.9 → 1 over .26s with a cubic-bezier(.2,.8,.3,1) ease). A
+ * reanimated custom entering builder carries all three transforms (Layout-
+ * Animation presets like FadeInUp don't include the scale leg).
+ */
+const cardEntering = () => {
+  'worklet';
+  const ease = Easing.bezier(0.2, 0.8, 0.3, 1);
+  return {
+    initialValues: {opacity: 0, transform: [{translateY: 8}, {scale: 0.9}]},
+    animations: {
+      opacity: withTiming(1, {duration: 260, easing: ease}),
+      transform: [
+        {translateY: withTiming(0, {duration: 260, easing: ease})},
+        {scale: withTiming(1, {duration: 260, easing: ease})},
+      ],
+    },
+  };
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -161,7 +184,10 @@ const styles = StyleSheet.create({
   headerMain: {flex: 1, minWidth: 0},
   headwordRow: {flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap'},
   headword: {
-    fontFamily: InflowFonts.reading.bold,
+    // Design card headword weight is 600; Newsreader ships regular/medium/bold,
+    // so reading.medium (500) is the closest available step (bold 700 was too
+    // heavy).
+    fontFamily: InflowFonts.reading.medium,
     fontSize: 20,
   },
   posPill: {borderRadius: 7, paddingHorizontal: 8, paddingVertical: 3},

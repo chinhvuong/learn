@@ -61,17 +61,23 @@ export function itemTokenStyle(
 
   if (kind === 'grammarPoint') {
     // Grammar Point — teal-soft highlight pill (5px radius); recolors to the
-    // warm-soft pill once Absorbed.
+    // warm-soft pill once Absorbed. The handoff pill carries 6px/2px inset
+    // padding; on RN inline Text horizontal paddingHorizontal renders but
+    // vertical padding does not affect inline line-box height, so we apply
+    // paddingHorizontal:6 only (vertical inset is approximated by line-height).
     return {
       color: accentInk,
       backgroundColor: absorbed ? colors.warmSoft : colors.flowSoft,
       borderRadius: 5,
+      paddingHorizontal: 6,
     };
   }
 
   // Vocabulary — thin (1.5px) teal underline; gains a warm-soft fill once
-  // Absorbed.
+  // Absorbed. Design vocab weight is 500 (Newsreader Medium) — not the regular
+  // (400) inherited from the reading surface.
   return {
+    fontFamily: InflowFonts.reading.medium,
     color: absorbed ? accentInk : colors.ink,
     textDecorationLine: 'underline',
     textDecorationColor: accent,

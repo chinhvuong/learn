@@ -6,6 +6,8 @@ import {useNavigation} from "@react-navigation/native";
 import {z} from "zod";
 import {AppButton, AppInput, AppText} from "@/components/ui";
 import Icon from "@/components/ui/Icon.tsx";
+import {AppleIcon, GoogleIcon} from "@/components/ui/BrandIcons";
+import {useColors} from "@/hooks/useColors.ts";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
 import {migrateAnonymousProgressToAccount} from "@/features/onboarding/onboardingSlice.ts";
@@ -35,6 +37,7 @@ export default function SignupScreen() {
   const {t} = useTranslation();
   const navigation = useNavigation<OnboardingNavigationProp>();
   const dispatch = useAppDispatch();
+  const colors = useColors();
   const absorbedTotal = useAppSelector(s => s.onboarding.anonymousProgress.absorbedTotal);
 
   const [emailMode, setEmailMode] = useState(false);
@@ -77,7 +80,12 @@ export default function SignupScreen() {
           <View className={"w-14 h-14 rounded-2xl bg-warm-soft items-center justify-center mb-5"}>
             <Icon name={"Flame"} className={"text-warm w-7 h-7"}/>
           </View>
-          <AppText variant={"display3"} weight={"bold"} className={"mb-2.5"}>
+          <AppText
+            variant={"display3"}
+            weight={"bold"}
+            className={"mb-2.5"}
+            style={{fontSize: 26, lineHeight: 30}}
+          >
             ONBOARDING_SIGNUP_TITLE
           </AppText>
           <AppText variant={"body"} color={"muted"} className={"mb-7"} raw>
@@ -105,9 +113,9 @@ export default function SignupScreen() {
             <View className={"gap-3"}>
               <AppButton
                 variant={"default"}
-                className={"rounded-2xl bg-neutrals1000"}
+                className={"rounded-2xl bg-ink"}
                 textClassname={"text-background"}
-                icon={<Icon name={"Apple"} className={"text-background"}/>}
+                icon={<View><AppleIcon size={17} color={colors.background}/></View>}
                 onPress={() => signUpWith("apple")}
               >
                 {t("ONBOARDING_SIGNUP_APPLE")}
@@ -115,7 +123,7 @@ export default function SignupScreen() {
               <AppButton
                 variant={"outline"}
                 className={"rounded-2xl"}
-                icon={<Icon name={"Globe"} className={"text-foreground"}/>}
+                icon={<GoogleIcon size={17}/>}
                 onPress={() => signUpWith("google")}
               >
                 {t("ONBOARDING_SIGNUP_GOOGLE")}

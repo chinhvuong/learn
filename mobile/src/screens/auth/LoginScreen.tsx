@@ -1,11 +1,15 @@
 import React, {useState} from 'react';
-import {Alert, Pressable, Text, View} from 'react-native';
+import {Pressable, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 import {z} from 'zod';
 import AuthContainer from '@/components/auth/AuthContainer';
 import AppInput from '@/components/ui/AppInput';
 import AppButton from '@/components/ui/AppButton';
+import AppText from '@/components/ui/AppText';
 import Icon from '@/components/ui/Icon';
+import InflowLogo from '@/components/ui/InflowLogo';
+import {AppleIcon, GoogleIcon} from '@/components/ui/BrandIcons';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -16,6 +20,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const {t} = useTranslation();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -49,11 +54,7 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(() => resolve(null), 2000));
-      Alert.alert('Success', 'Login successful!', [
-        {text: 'OK', onPress: () => navigation.navigate('Main')},
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+      navigation.navigate('Main');
     } finally {
       setIsLoading(false);
     }
@@ -67,72 +68,111 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthContainer>
-      <View className="flex-1 justify-center">
-        <View className="mb-8">
-          <Text className="text-3xl font-sans-bold text-foreground text-center mb-2">
-            Welcome Back
-          </Text>
-          <Text className="text-base font-sans-regular text-neutrals100 text-center">
-            Sign in to your account
-          </Text>
-        </View>
+    <AuthContainer className="px-7 py-4">
+      {/* Back chevron — top-left */}
+      <Pressable
+        onPress={() => navigation.goBack()}
+        className="w-[34px] h-[34px] rounded-[11px] bg-surface border border-hair items-center justify-center mb-4">
+        <Icon name="ChevronLeft" className="w-5 h-5 text-ink2" />
+      </Pressable>
 
-        <View className="gap-4 mb-6">
-          <AppInput
-            label="Email"
-            placeholder="Enter your email"
-            value={formData.email}
-            onChangeText={value => updateFormData('email', value)}
-            errorText={errors.email}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            leftIcon={<Icon name="Mail" className="w-5 h-5 text-neutrals100"/>}
-          />
+      {/* Brand mark */}
+      <InflowLogo size={50} radius={15} style={{marginBottom: 18}} />
 
-          <AppInput
-            label="Password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChangeText={value => updateFormData('password', value)}
-            errorText={errors.password}
-            secureTextEntry={!showPassword}
-            autoComplete="password"
-            leftIcon={<Icon name="Lock" className="w-5 h-5 text-neutrals100"/>}
-            rightIcon={
-              <Pressable onPress={() => setShowPassword(!showPassword)}>
-                <Icon
-                  name={showPassword ? 'EyeOff' : 'Eye'}
-                  className="w-5 h-5 text-neutrals100"
-                />
-              </Pressable>
-            }
-          />
-        </View>
+      <AppText variant="heading1" className="mb-1.5">
+        LOGIN_TITLE
+      </AppText>
+      <AppText variant="body" className="text-ink2 mb-6">
+        LOGIN_SUBTITLE
+      </AppText>
 
-        <Pressable className="mb-6">
-          <Text className="text-primary font-sans-medium text-right">
-            Forgot Password?
-          </Text>
-        </Pressable>
+      <View className="mb-5">
+        <AppInput
+          label={t('LOGIN_EMAIL_LABEL')}
+          placeholder={t('LOGIN_EMAIL_PLACEHOLDER')}
+          value={formData.email}
+          onChangeText={value => updateFormData('email', value)}
+          errorText={errors.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+        />
+      </View>
 
-        <AppButton
-          variant="primary"
-          onPress={handleLogin}
-          disabled={isLoading}
-          className="mb-6">
-          {isLoading ? 'Signing In...' : 'Sign In'}
-        </AppButton>
-
-        <View className="flex-row justify-center items-center">
-          <Text className="text-neutrals100 font-sans-regular">
-            Don't have an account?{' '}
-          </Text>
-          <Pressable onPress={() => navigation.navigate('Register')}>
-            <Text className="text-primary font-sans-medium">Sign Up</Text>
+      <View className="mb-5">
+        {/* Password label row with inline "Quên mật khẩu?" on the right */}
+        <View className="flex-row items-center mb-2">
+          <AppText variant="labelSmall" weight="bold" className="text-ink2">
+            LOGIN_PASSWORD_LABEL
+          </AppText>
+          <Pressable className="ml-auto">
+            <AppText variant="labelSmall" weight="bold" className="text-flow-ink">
+              LOGIN_FORGOT
+            </AppText>
           </Pressable>
         </View>
+        <AppInput
+          placeholder={t('LOGIN_PASSWORD_PLACEHOLDER')}
+          value={formData.password}
+          onChangeText={value => updateFormData('password', value)}
+          errorText={errors.password}
+          secureTextEntry={!showPassword}
+          autoComplete="password"
+          rightIcon={
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
+              <Icon
+                name={showPassword ? 'EyeOff' : 'Eye'}
+                className="w-5 h-5 text-ink3"
+              />
+            </Pressable>
+          }
+        />
+      </View>
+
+      <AppButton
+        variant="primary"
+        size="lg"
+        onPress={handleLogin}
+        loading={isLoading}
+        className="mb-5">
+        {isLoading ? t('LOGIN_SUBMITTING') : t('LOGIN_SUBMIT')}
+      </AppButton>
+
+      {/* "hoặc tiếp tục với" divider */}
+      <View className="flex-row items-center gap-3 mb-5">
+        <View className="flex-1 h-px bg-hair" />
+        <AppText variant="labelSmall" className="text-ink3">
+          LOGIN_OR
+        </AppText>
+        <View className="flex-1 h-px bg-hair" />
+      </View>
+
+      {/* 2-up social row: Apple (dark) + Google (bordered) */}
+      <View className="flex-row gap-3">
+        <Pressable className="flex-1 flex-row items-center justify-center gap-2 py-3.5 rounded-[14px] bg-ink">
+          <AppleIcon size={16} color="#fff" />
+          <AppText variant="label" weight="bold" className="text-app-bg">
+            LOGIN_APPLE
+          </AppText>
+        </Pressable>
+        <Pressable className="flex-1 flex-row items-center justify-center gap-2 py-3.5 rounded-[14px] border-[1.5px] border-border bg-surface">
+          <GoogleIcon size={16} />
+          <AppText variant="label" weight="bold" className="text-ink">
+            LOGIN_GOOGLE
+          </AppText>
+        </Pressable>
+      </View>
+
+      {/* Footer */}
+      <View className="flex-row justify-center items-center mt-8">
+        <AppText variant="bodySmall" className="text-ink3">
+          {t('LOGIN_NO_ACCOUNT')}{' '}
+        </AppText>
+        <Pressable onPress={() => navigation.navigate('Register')}>
+          <AppText variant="bodySmall" weight="bold" className="text-flow-ink">
+            LOGIN_SIGN_UP
+          </AppText>
+        </Pressable>
       </View>
     </AuthContainer>
   );

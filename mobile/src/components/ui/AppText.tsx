@@ -1,5 +1,5 @@
 import React from 'react';
-import {Text, TextProps} from 'react-native';
+import {Text, TextProps, TextStyle} from 'react-native';
 import {cn} from '@/utils';
 import {cva} from 'class-variance-authority';
 import {useTranslation} from "react-i18next";
@@ -21,7 +21,7 @@ interface AppTextProps extends TextProps {
     | 'overline'
     | 'label'
     | 'labelSmall';
-  weight?: 'regular' | 'medium' | 'semibold' | 'bold';
+  weight?: 'regular' | 'medium' | 'semibold' | 'bold' | 'extrabold';
   color?: 'default' | 'primary' | 'secondary' | 'muted' | 'success' | 'warning' | 'error';
   align?: 'left' | 'center' | 'right';
   children: React.ReactNode;
@@ -55,6 +55,7 @@ const textVariants = cva(
         medium: 'font-sans-medium',
         semibold: 'font-sans-semibold',
         bold: 'font-sans-bold',
+        extrabold: 'font-sans-extrabold',
       },
       color: {
         default: 'text-foreground',
@@ -96,9 +97,11 @@ export default function AppText({
   }
 
   if (!weight) {
-    if (['display1', 'display2', 'display3'].includes(variant)) {
-      computedClassName = cn(computedClassName, 'font-sans-bold');
-    } else if (['heading1', 'heading2', 'heading3', 'heading4', 'heading5'].includes(variant)) {
+    // Display + large headings are weight 800 (ExtraBold) per the design
+    // handoff; smaller headings stay at 700 (Bold). See typography.ts.
+    if (['display1', 'display2', 'display3', 'heading1', 'heading2'].includes(variant)) {
+      computedClassName = cn(computedClassName, 'font-sans-extrabold');
+    } else if (['heading3', 'heading4', 'heading5'].includes(variant)) {
       computedClassName = cn(computedClassName, 'font-sans-bold');
     } else if (['label', 'labelSmall'].includes(variant)) {
       computedClassName = cn(computedClassName, 'font-sans-medium');
@@ -107,9 +110,26 @@ export default function AppText({
     }
   }
 
+  // Headings carry negative letter-spacing in the design (~ -0.4 to -1.2px).
+  // NativeWind has no tracking scale wired, so apply it as an inline style.
+  const headingTracking: Partial<Record<NonNullable<AppTextProps['variant']>, number>> = {
+    display1: -1.2,
+    display2: -1,
+    display3: -0.6,
+    heading1: -0.6,
+    heading2: -0.5,
+    heading3: -0.4,
+  };
+  const tracking = headingTracking[variant];
+  const mergedStyle: TextStyle | TextProps['style'] =
+    tracking !== undefined
+      ? [{letterSpacing: tracking}, props.style as TextStyle]
+      : props.style;
+
   return (
     <Text
       {...props}
+      style={mergedStyle}
       className={cn(computedClassName, className)}
     >
       {children}

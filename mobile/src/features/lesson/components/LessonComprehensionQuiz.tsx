@@ -36,6 +36,29 @@ const TYPE_LABEL_KEY: Record<QuizQuestionType, string> = {
 };
 
 /**
+ * Render the wrong-answer feedback with the word "xanh" (teal) emphasized in
+ * the flow-ink accent — the design tints exactly that word to reinforce that
+ * the correct option is highlighted teal. The rest stays in ink2. Splitting the
+ * resolved copy keeps the Vietnamese string in the locale bundle (not inlined).
+ */
+function renderWrongFeedback(line: string, accent: string): React.ReactNode {
+  const word = 'xanh';
+  const at = line.indexOf(word);
+  if (at < 0) {
+    return line;
+  }
+  return (
+    <>
+      {line.slice(0, at)}
+      <AppText raw style={{color: accent}}>
+        {word}
+      </AppText>
+      {line.slice(at + word.length)}
+    </>
+  );
+}
+
+/**
  * Lesson Player — comprehension Quiz (screens.md §12; the design handoff's
  * `lpQuiz*`). After reading/listening, a short optional quiz asks main-idea /
  * detail / inference questions about the passage.
@@ -184,7 +207,7 @@ export default function LessonComprehensionQuiz({
           value={progressPct}
           variant="primary"
           size="sm"
-          trackClassName="bg-neutrals900"
+          trackClassName="bg-surface-2"
         />
       </View>
 
@@ -254,7 +277,7 @@ export default function LessonComprehensionQuiz({
             ) : null}
             {answered && !right ? (
               <AppText raw style={[styles.feedbackWrong, {color: colors.ink2}]}>
-                {t('LP_QUIZ_WRONG')}
+                {renderWrongFeedback(t('LP_QUIZ_WRONG'), colors.flowInk)}
               </AppText>
             ) : null}
           </>
