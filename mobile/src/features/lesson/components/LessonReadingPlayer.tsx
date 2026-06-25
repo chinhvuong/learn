@@ -208,7 +208,7 @@ export default function LessonReadingPlayer({
             onPress={() => dispatch(markRestKnown())}
             style={styles.knowRest}>
             <AppText raw style={[styles.knowRestText, {color: colors.ink3}]}>
-              {t('LP_KNOW_REST')}
+              {t('LP_KNOW_REST', {count: remaining})}
             </AppText>
           </Pressable>
         ) : null}

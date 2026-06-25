@@ -3,53 +3,56 @@ import {TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {useColors} from '@/hooks/useColors.ts';
-import {Home, Plus, User, Zap} from 'lucide-react-native';
-import {AppText} from "@/components/ui";
-import {useTranslation} from "react-i18next";
+import {House, SquarePlus, User, Zap} from 'lucide-react-native';
+import {AppText} from '@/components/ui';
+import {useTranslation} from 'react-i18next';
 
 interface TabIconProps {
   name: string;
   color: string;
   size: number;
-  /** Active tabs carry a marginally heavier stroke in the handoff (2 vs 1.8). */
   strokeWidth: number;
 }
 
+/**
+ * Tab glyphs, matched to the design.pen TabBar (`xzXcl`) lucide icons:
+ * Học = `house`, Tạo = `square-plus`, Thử thách = `zap`, Hồ sơ = `user`.
+ */
 const TabIcon: React.FC<TabIconProps> = ({name, color, size, strokeWidth}) => {
   switch (name) {
     case 'Learn':
-      return <Home size={size} color={color} strokeWidth={strokeWidth}/>;
+      return <House size={size} color={color} strokeWidth={strokeWidth}/>;
     case 'Create':
-      return <Plus size={size} color={color} strokeWidth={strokeWidth}/>;
+      return <SquarePlus size={size} color={color} strokeWidth={strokeWidth}/>;
     case 'Challenge':
       return <Zap size={size} color={color} strokeWidth={strokeWidth}/>;
     case 'Profile':
       return <User size={size} color={color} strokeWidth={strokeWidth}/>;
     default:
-      return <Home size={size} color={color} strokeWidth={strokeWidth}/>;
+      return <House size={size} color={color} strokeWidth={strokeWidth}/>;
   }
 };
 
 /**
  * Inflow bottom tab bar — Học · Tạo · Thử thách · Hồ sơ.
  *
- * Recreated from the design handoff tab chrome (the `#core`/`#create`/`#profile`
- * phone frames in Inflow.dc.html):
- *   - container: `var(--app-bg)` fill, 1px `var(--hair)` top hairline, padding
- *     9px / 12px / 6px (plus the bottom safe-area inset).
- *   - active tab = `--flow-ink` (teal ink), inactive = `--ink-3`.
- *   - icon 23px, label 10.5px, 3px icon→label gap; active label weight 700,
- *     inactive 600. Active icons use a slightly heavier stroke.
- * All colors come from the active Inflow token set (useColors), so light/dark
- * re-theme automatically — nothing hardcoded.
+ * Pixel-matched to the design.pen TabBar (`xzXcl`):
+ *   - container: `$app-bg` fill, 1px `$hair` top hairline, padding 9/12/6/12
+ *     (top/right/bottom/left) plus the bottom safe-area inset.
+ *   - tab cell: vertical, centered, 3px icon→label gap, fills equal width.
+ *   - icon 23px; label `font-ui` 10.5px.
+ *   - active = `$flow-ink` (teal ink) + label weight 700; inactive = `$ink-3`
+ *     + label weight 600. Active/inactive share the same icon stroke (the pen
+ *     differentiates by colour and label weight only).
  *
- * `title` holds an i18n key; it is run through `t()` so labels render as
- * Vietnamese product copy and follow language changes.
+ * All colours come from the active Inflow token set (`useColors`), so the bar
+ * re-themes for light/dark with nothing hardcoded. Labels are run through `t()`
+ * so they render as Vietnamese product copy and follow language changes.
  */
 const CustomTabBar: React.FC<BottomTabBarProps> = ({
                                                      state,
                                                      descriptors,
-                                                     navigation
+                                                     navigation,
                                                    }) => {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -117,13 +120,15 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
               name={route.name}
               color={tintColor}
               size={23}
-              strokeWidth={isFocused ? 2 : 1.8}
+              strokeWidth={2}
             />
             <AppText
+              raw
+              weight={isFocused ? 'bold' : 'semibold'}
               style={{
                 color: tintColor,
                 fontSize: 10.5,
-                fontWeight: isFocused ? '700' : '600',
+                lineHeight: 13,
                 textAlign: 'center',
               }}
             >

@@ -1,9 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 import {AppButton, AppText} from '@/components/ui';
 import {useColors} from '@/hooks/useColors';
 import {InflowFonts} from '@/config/typography';
+import Confetti from '@/features/gamification/components/Confetti';
 import type {CefrBand, Item} from '../types';
 import type {ItemDecision} from '../lessonSessionSlice';
 import NorthStarCounter from './NorthStarCounter';
@@ -136,7 +143,28 @@ export default function LessonCompleteView({
     setNsValue(northStarLive);
   }, [northStarLive]);
 
+  // Celebratory nsPop on the big North Star number at mount (handoff
+  // `@keyframes nsPop`: scale 1 → 1.12 @40% → 1 over ~600ms).
+  const nsPop = useSharedValue(1);
+  useEffect(() => {
+    nsPop.value = withSequence(
+      withTiming(1.12, {duration: 240}),
+      withTiming(1, {duration: 360}),
+    );
+  }, [nsPop]);
+  const nsPopStyle = useAnimatedStyle(() => ({
+    transform: [{scale: nsPop.value}],
+  }));
+
+  // Brief confetti burst over the completion recap (the everyday celebration).
+  const [confettiActive, setConfettiActive] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setConfettiActive(false), 3500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
+    <View style={styles.root}>
     <ScrollView
       style={{backgroundColor: colors.appBg}}
       contentContainerStyle={styles.content}>
@@ -207,7 +235,9 @@ export default function LessonCompleteView({
         <AppText raw style={[styles.northStarLabel, {color: colors.ink3}]}>
           {t('LP_COMPLETE_NORTH_STAR_LABEL')}
         </AppText>
-        <NorthStarCounter value={nsValue} floatKey={0} />
+        <Animated.View style={nsPopStyle}>
+          <NorthStarCounter value={nsValue} floatKey={0} />
+        </Animated.View>
         <AppText raw style={[styles.delta, {color: colors.flowInk}]}>
           {t('LP_COMPLETE_DELTA', {count: northStarLive - northStarBase})}
         </AppText>
@@ -346,10 +376,14 @@ export default function LessonCompleteView({
         </View>
       ) : null}
     </ScrollView>
+      {/* Brief celebratory confetti over the recap (auto-stops). */}
+      {confettiActive ? <Confetti active={confettiActive} /> : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {flex: 1},
   content: {
     flexGrow: 1,
     alignItems: 'center',

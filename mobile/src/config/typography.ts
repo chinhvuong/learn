@@ -104,9 +104,9 @@ export const inflowTextStyles = {
   },
   readingLarge: {
     fontFamily: InflowFonts.reading.regular,
-    fontSize: 18,
-    lineHeight: 31,
-    letterSpacing: 0,
+    fontSize: 19,
+    lineHeight: 34, // design passageStyle: 19px / 1.78
+    letterSpacing: 0.1,
   },
   readingItalic: {
     fontFamily: InflowFonts.reading.italic,

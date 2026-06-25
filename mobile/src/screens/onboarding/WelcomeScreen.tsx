@@ -4,7 +4,7 @@ import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
 import {AppButton, AppText} from "@/components/ui";
-import Icon from "@/components/ui/Icon.tsx";
+import InflowLogo from "@/components/ui/InflowLogo";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 
 /**
@@ -34,17 +34,13 @@ export default function WelcomeScreen() {
       style={{paddingTop: insets.top, paddingBottom: insets.bottom + 16}}
     >
       <View className={"flex-1 items-center justify-center"}>
-        <View
-          className={
-            "w-16 h-16 rounded-3xl bg-flow items-center justify-center mb-6"
-          }
-        >
-          <Icon name={"Sparkles"} className={"text-on-flow w-8 h-8"}/>
+        <View className={"mb-6"}>
+          <InflowLogo size={62} radius={18}/>
         </View>
         <AppText variant={"heading3"} weight={"bold"} align={"center"} className={"mb-1"}>
           Inflow
         </AppText>
-        <AppText variant={"heading1"} align={"center"}>
+        <AppText variant={"heading1"} align={"center"} style={{fontSize: 27, lineHeight: 32}}>
           ONBOARDING_WELCOME_TITLE
         </AppText>
         <AppText

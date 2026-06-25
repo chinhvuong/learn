@@ -26,7 +26,7 @@ interface AppInputProps extends TextInputProps {
 }
 
 const inputVariants = cva(
-  'border rounded-lg font-sans-medium bg-background',
+  'border-[1.5px] rounded-[14px] font-sans-medium bg-surface',
   {
     variants: {
       variant: {
@@ -34,13 +34,13 @@ const inputVariants = cva(
         textarea: 'min-h-20 text-top text-foreground',
       },
       size: {
-        sm: 'px-3 py-2 text-sm',
-        md: 'px-4 py-2.5 text-base',
-        lg: 'px-4 py-3 text-lg',
+        sm: 'px-3 py-2.5 text-sm',
+        md: 'px-3.5 py-3.5 text-base',
+        lg: 'px-4 py-4 text-lg',
       },
       state: {
-        default: 'border-neutrals900',
-        focused: 'border-neutrals600',
+        default: 'border-border',
+        focused: 'border-flow',
         error: 'border-error',
       },
       hasLeftIcon: {
@@ -59,13 +59,13 @@ const inputVariants = cva(
 );
 
 const labelVariants = cva(
-  'font-sans-medium text-foreground mb-1.5',
+  'font-sans-bold text-ink2 mb-2',
   {
     variants: {
       size: {
-        sm: 'text-sm',
-        md: 'text-base',
-        lg: 'text-lg',
+        sm: 'text-xs',
+        md: 'text-xs',
+        lg: 'text-sm',
       },
       required: {
         true: "after:content-['*'] after:text-error after:ml-1",
@@ -173,10 +173,10 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
             </View>
           )}
 
-          {/* Animated border overlay for focus effect */}
+          {/* Soft teal focus ring — approximates `0 0 0 3px var(--flow-soft)`. */}
           <Animated.View
             style={borderAnimatedStyle}
-            className="absolute inset-0 border-2 border-neutrals500 rounded-lg pointer-events-none z-5"
+            className="absolute -inset-[3px] border-[3px] border-flow-soft rounded-[17px] pointer-events-none z-0"
           />
 
           <TextInput
@@ -185,7 +185,7 @@ const AppInput = forwardRef<TextInput, AppInputProps>(
             multiline={variant === 'textarea'}
             textAlignVertical={variant === 'textarea' ? 'top' : 'center'}
             onFocus={handleFocus}
-            placeholderTextColor={colors.neutrals600}
+            placeholderTextColor={colors.ink3}
             onBlur={handleBlur}
             className={cn(
               inputVariants({

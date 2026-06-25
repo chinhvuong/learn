@@ -1,9 +1,11 @@
 import React from "react";
-import {ScrollView, View} from "react-native";
+import {Pressable, ScrollView, View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
-import {AppButton, AppText, Chip} from "@/components/ui";
+import {Check} from "lucide-react-native";
+import {AppButton, AppText} from "@/components/ui";
+import {useColors} from "@/hooks/useColors.ts";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
 import {toggleTopic} from "@/features/onboarding/onboardingSlice.ts";
@@ -21,6 +23,7 @@ export default function TopicsScreen() {
   const {t} = useTranslation();
   const navigation = useNavigation<OnboardingNavigationProp>();
   const dispatch = useAppDispatch();
+  const colors = useColors();
   const selected = useAppSelector(state => state.onboarding.selectedTopicIds);
 
   const count = selected.length;
@@ -45,15 +48,30 @@ export default function TopicsScreen() {
           {ONBOARDING_TOPICS.map(topic => {
             const isSelected = selected.includes(topic.id);
             return (
-              <Chip
+              <Pressable
                 key={topic.id}
-                size={"lg"}
-                variant={"outline"}
-                selected={isSelected}
                 onPress={() => dispatch(toggleTopic(topic.id))}
+                className={`flex-row items-center gap-1.5 px-4 py-2 min-h-10 rounded-[13px] active:opacity-80 ${
+                  isSelected
+                    ? "bg-flow-soft border-[1.5px] border-flow"
+                    : "bg-surface border border-border"
+                }`}
               >
-                {`${topic.emoji} ${t(topic.labelKey)}${isSelected ? " ✓" : ""}`}
-              </Chip>
+                <AppText
+                  variant={"body"}
+                  weight={"medium"}
+                  color={"default"}
+                  className={isSelected ? "text-flow-ink" : ""}
+                  raw
+                >
+                  {`${topic.emoji} ${t(topic.labelKey)}`}
+                </AppText>
+                {isSelected ? (
+                  <View className={"w-4 h-4 rounded-full bg-flow items-center justify-center"}>
+                    <Check size={11} color={colors.onFlow} strokeWidth={3}/>
+                  </View>
+                ) : null}
+              </Pressable>
             );
           })}
         </View>

@@ -266,14 +266,25 @@ export default function CreateScreen() {
     );
   }
 
-  // idle — the composer (empty + filled states across the three modes).
+  // Whether the active mode currently holds usable input — drives the CTA
+  // disabled state alongside the Credit check.
+  const hasInput =
+    mode === 'link'
+      ? link.trim().length > 0
+      : mode === 'text'
+        ? text.trim().length > 0
+        : file !== null;
+
+  // idle — the single-screen composer (design 13a): link input + "hoặc" + the
+  // Dán text / Tải file cards, all visible together; the active card reveals
+  // its input inline.
   return (
     <ScrollView
       className="flex-1 bg-background"
       contentContainerClassName="px-6 pb-10"
       style={{paddingTop: insets.top}}
       keyboardShouldPersistTaps="handled">
-      <View className="flex-row items-center gap-3 mt-4 mb-6">
+      <View className="flex-row items-center gap-3 mt-4 mb-3">
         <View className="w-12 h-12 rounded-full bg-flowSoft items-center justify-center">
           <Icon name="Sparkles" className="text-flow w-6 h-6" />
         </View>
@@ -282,61 +293,101 @@ export default function CreateScreen() {
         </AppText>
       </View>
 
-      {/* Mode selector: 🔗 link · 📝 text · 📎 file */}
-      <View className="flex-row gap-2 mb-5">
-        {MODES.map(m => {
-          const selected = mode === m.key;
-          return (
-            <Pressable
-              key={m.key}
-              accessibilityRole="button"
-              accessibilityState={{selected}}
-              onPress={() => {
-                setMode(m.key);
-                setValidationKey(null);
-              }}
-              className={cn(
-                'flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl border',
-                selected
-                  ? 'bg-flowSoft border-flow'
-                  : 'bg-background border-neutrals900',
-              )}>
-              <Icon
-                name={m.icon}
-                className={cn(
-                  'w-4 h-4',
-                  selected ? 'text-flow' : 'text-neutrals400',
-                )}
-              />
-              <AppText
-                variant="bodySmall"
-                color={selected ? 'primary' : 'muted'}
-                weight={selected ? 'semibold' : 'regular'}>
-                {t(m.labelKey)}
-              </AppText>
-            </Pressable>
-          );
-        })}
+      <AppText variant="body" color="muted" className="mb-6" raw>
+        {t('CREATE_SUBTITLE')}
+      </AppText>
+
+      {/* 🔗 Link — primary input, always visible */}
+      <AppText variant="label" className="mb-1.5" raw>
+        🔗 {t('CREATE_LINK_LABEL')}
+      </AppText>
+      <AppInput
+        placeholder={t('CREATE_LINK_PLACEHOLDER')}
+        value={link}
+        onChangeText={txt => {
+          setLink(txt);
+          if (mode !== 'link') {
+            setMode('link');
+          }
+          setValidationKey(null);
+        }}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="url"
+        leftIcon={<Icon name="Link" className="text-neutrals400 w-5 h-5" />}
+      />
+
+      {/* hoặc divider */}
+      <View className="flex-row items-center gap-3 my-4">
+        <View className="flex-1 h-px bg-neutrals900" />
+        <AppText variant="bodySmall" color="muted" raw>
+          {t('CREATE_OR')}
+        </AppText>
+        <View className="flex-1 h-px bg-neutrals900" />
       </View>
 
-      {/* Per-mode input (empty + filled) */}
-      {mode === 'link' && (
-        <AppInput
-          label={t('CREATE_LINK_LABEL')}
-          placeholder={t('CREATE_LINK_PLACEHOLDER')}
-          helperText={t('CREATE_LINK_HINT')}
-          value={link}
-          onChangeText={txt => {
-            setLink(txt);
+      {/* 📝 Dán text · 📎 Tải file — both visible, each "🔒 chỉ mình bạn" */}
+      <View className="flex-row gap-3 mb-4">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{selected: mode === 'text'}}
+          onPress={() => {
+            setMode('text');
             setValidationKey(null);
           }}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="url"
-          leftIcon={<Icon name="Link" className="text-neutrals400 w-5 h-5" />}
-        />
-      )}
+          className={cn(
+            'flex-1 items-center gap-1.5 py-4 px-3 rounded-2xl border',
+            mode === 'text'
+              ? 'bg-flowSoft border-flow'
+              : 'bg-surface border-neutrals900',
+          )}>
+          <AppText variant="heading2" raw>
+            📝
+          </AppText>
+          <AppText
+            variant="bodySmall"
+            weight="semibold"
+            color={mode === 'text' ? 'primary' : 'default'}
+            raw>
+            {t('CREATE_TEXT_LABEL')}
+          </AppText>
+          <AppText variant="caption" color="muted" raw>
+            {t('CREATE_PRIVATE_NOTE')}
+          </AppText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{selected: mode === 'file'}}
+          onPress={() => {
+            setMode('file');
+            setValidationKey(null);
+            if (!file) {
+              handlePickFile();
+            }
+          }}
+          className={cn(
+            'flex-1 items-center gap-1.5 py-4 px-3 rounded-2xl border',
+            mode === 'file'
+              ? 'bg-flowSoft border-flow'
+              : 'bg-surface border-neutrals900',
+          )}>
+          <AppText variant="heading2" raw>
+            📎
+          </AppText>
+          <AppText
+            variant="bodySmall"
+            weight="semibold"
+            color={mode === 'file' ? 'primary' : 'default'}
+            raw>
+            {t('CREATE_FILE_LABEL')}
+          </AppText>
+          <AppText variant="caption" color="muted" raw>
+            {t('CREATE_PRIVATE_NOTE')}
+          </AppText>
+        </Pressable>
+      </View>
 
+      {/* Text mode reveals the textarea inline */}
       {mode === 'text' && (
         <AppInput
           label={t('CREATE_TEXT_LABEL')}
@@ -353,32 +404,21 @@ export default function CreateScreen() {
         />
       )}
 
-      {mode === 'file' && (
-        <View>
-          <AppText variant="label" className="mb-1.5" raw>
-            {t('CREATE_FILE_LABEL')}
+      {/* File mode shows the picked file + change affordance */}
+      {mode === 'file' && file ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={handlePickFile}
+          className="flex-row items-center gap-3 border border-neutrals900 rounded-xl py-4 px-4">
+          <Icon name="Paperclip" className="text-flow w-5 h-5" />
+          <AppText variant="body" className="flex-1" raw>
+            {t('CREATE_FILE_SELECTED', {name: file.name})}
           </AppText>
-          <Pressable
-            accessibilityRole="button"
-            onPress={handlePickFile}
-            className="border border-neutrals900 border-dashed rounded-xl py-8 items-center justify-center gap-2">
-            <Icon name="Upload" className="text-flow w-7 h-7" />
-            <AppText variant="body" color={file ? 'default' : 'muted'} raw>
-              {file
-                ? t('CREATE_FILE_SELECTED', {name: file.name})
-                : t('CREATE_FILE_PICK')}
-            </AppText>
-            {file ? (
-              <AppText variant="bodySmall" color="primary" raw>
-                {t('CREATE_FILE_CHANGE')}
-              </AppText>
-            ) : null}
-          </Pressable>
-          <AppText variant="bodySmall" color="muted" className="mt-2" raw>
-            {t('CREATE_PRIVATE_NOTE')}
+          <AppText variant="bodySmall" color="primary" raw>
+            {t('CREATE_FILE_CHANGE')}
           </AppText>
-        </View>
-      )}
+        </Pressable>
+      ) : null}
 
       {validationKey ? (
         <AppText variant="bodySmall" color="error" className="mt-2">
@@ -386,14 +426,15 @@ export default function CreateScreen() {
         </AppText>
       ) : null}
 
-      <AppText
-        variant="bodySmall"
-        color="muted"
-        align="center"
-        className="my-5"
-        raw>
-        {t('CREATE_SHARE_HINT')}
-      </AppText>
+      {/* Share-from-anywhere tip */}
+      <View className="flex-row items-start gap-2.5 bg-warmSoft rounded-2xl px-4 py-3 my-4">
+        <AppText variant="body" raw>
+          💡
+        </AppText>
+        <AppText variant="bodySmall" className="flex-1 text-warmInk" weight="semibold" raw>
+          {t('CREATE_SHARE_HINT')}
+        </AppText>
+      </View>
 
       {/* Remaining Creation Credits — shown before creating */}
       <View className="bg-neutrals1000 rounded-2xl px-5 py-4 mb-5">
@@ -423,7 +464,7 @@ export default function CreateScreen() {
       <AppButton
         variant="primary"
         size="lg"
-        disabled={!hasCredit}
+        disabled={!hasCredit || !hasInput}
         onPress={handleSubmit}>
         {t('CREATE_SUBMIT')}
       </AppButton>

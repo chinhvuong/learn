@@ -1,5 +1,13 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 import {AppButton, AppText, Icon} from '@/components/ui';
@@ -112,6 +120,36 @@ export default function LessonListeningPlayer({
     ? itemsById[session.openCardItemId]
     : null;
 
+  // Orb ripple (handoff `@keyframes ripple`: scale .6 → 1.5, opacity .55 → 0
+  // over 2.4s, looping; the second ring staggered by 1.2s). One progress value
+  // per ring drives both scale + opacity.
+  const ripple1 = useSharedValue(0);
+  const ripple2 = useSharedValue(0);
+  useEffect(() => {
+    ripple1.value = withRepeat(
+      withTiming(1, {duration: 2400, easing: Easing.out(Easing.ease)}),
+      -1,
+      false,
+    );
+    ripple2.value = withDelay(
+      1200,
+      withRepeat(
+        withTiming(1, {duration: 2400, easing: Easing.out(Easing.ease)}),
+        -1,
+        false,
+      ),
+    );
+  }, [ripple1, ripple2]);
+
+  const rippleStyle1 = useAnimatedStyle(() => ({
+    opacity: 0.55 * (1 - ripple1.value),
+    transform: [{scale: 0.6 + ripple1.value * 0.9}],
+  }));
+  const rippleStyle2 = useAnimatedStyle(() => ({
+    opacity: 0.55 * (1 - ripple2.value),
+    transform: [{scale: 0.6 + ripple2.value * 0.9}],
+  }));
+
   const currentIndex = audioState.currentSentenceIndex;
   const currentSentence = sentences[currentIndex];
   const progressPct =
@@ -182,12 +220,15 @@ export default function LessonListeningPlayer({
       <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
         {/* The "now playing" orb — concentric flow rings + gradient core. */}
         <View style={styles.orbWrap}>
-          <View style={[styles.orbRing, {borderColor: colors.flow}]} />
-          <View
+          <Animated.View
+            style={[styles.orbRing, {borderColor: colors.flow}, rippleStyle1]}
+          />
+          <Animated.View
             style={[
               styles.orbRing,
               styles.orbRingInner,
               {borderColor: colors.flow},
+              rippleStyle2,
             ]}
           />
           <View
@@ -565,14 +606,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   orbRing: {
+    // opacity + scale are driven by the looping ripple animation.
     position: 'absolute',
     width: 128,
     height: 128,
     borderRadius: 64,
     borderWidth: 2,
-    opacity: 0.35,
   },
-  orbRingInner: {width: 106, height: 106, borderRadius: 53, opacity: 0.5},
+  orbRingInner: {width: 106, height: 106, borderRadius: 53},
   orbCore: {
     width: 82,
     height: 82,

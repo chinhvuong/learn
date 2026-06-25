@@ -78,7 +78,12 @@ export default function PushPrimingScreen() {
           </View>
         </View>
 
-        <AppText variant={"display3"} weight={"bold"} className={"mb-5"}>
+        <AppText
+          variant={"display3"}
+          weight={"bold"}
+          className={"mb-5"}
+          style={{fontSize: 26, lineHeight: 30}}
+        >
           ONBOARDING_PUSH_TITLE
         </AppText>
 
