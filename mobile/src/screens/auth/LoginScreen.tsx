@@ -68,22 +68,22 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthContainer className="px-7 py-4">
+    <AuthContainer className="px-5 py-4">
       {/* Back chevron — top-left */}
       <Pressable
         onPress={() => navigation.goBack()}
-        className="w-[34px] h-[34px] rounded-[11px] bg-surface border border-hair items-center justify-center mb-4">
-        <Icon name="ChevronLeft" className="w-5 h-5 text-ink2" />
+        className="w-[38px] h-[38px] rounded-xl bg-surface border border-border items-center justify-center mb-3">
+        <Icon name="ChevronLeft" className="w-5 h-5 text-ink" />
       </Pressable>
 
       {/* Brand mark */}
-      <InflowLogo size={50} radius={15} style={{marginBottom: 18}} />
+      <InflowLogo size={56} radius={16} style={{marginBottom: 12}} />
 
-      <AppText variant="heading1" className="mb-1.5">
-        LOGIN_TITLE
+      <AppText weight="extrabold" raw className="text-ink mb-1.5" style={{fontSize: 26, lineHeight: 31}}>
+        {t('LOGIN_TITLE')}
       </AppText>
-      <AppText variant="body" className="text-ink2 mb-6">
-        LOGIN_SUBTITLE
+      <AppText raw className="text-ink2 mb-6" style={{fontSize: 14.5, lineHeight: 22}}>
+        {t('LOGIN_SUBTITLE')}
       </AppText>
 
       <View className="mb-5">

@@ -15,7 +15,7 @@ interface AuthContainerProps {
 
 export default function AuthContainer({children, className}: AuthContainerProps) {
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-app-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1">

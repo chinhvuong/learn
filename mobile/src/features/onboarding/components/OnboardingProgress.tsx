@@ -15,11 +15,11 @@ interface OnboardingProgressProps {
  */
 export default function OnboardingProgress({total, current}: OnboardingProgressProps) {
   return (
-    <View className="flex-row gap-1.5 mb-6">
+    <View className="flex-row mb-[18px]" style={{gap: 6}}>
       {Array.from({length: total}).map((_, i) => (
         <View
           key={i}
-          className={`h-1.5 flex-1 rounded-full ${i < current ? 'bg-flow' : 'bg-hair'}`}
+          className={`h-1 flex-1 rounded-sm ${i < current ? 'bg-flow' : 'bg-hair'}`}
         />
       ))}
     </View>

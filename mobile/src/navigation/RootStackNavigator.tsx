@@ -172,14 +172,16 @@ export default function RootStackNavigator() {
         name="Login"
         component={LoginScreen}
         options={{
-          title: "Login",
+          // Headerless: the auth screens carry their own back chevron + brand
+          // mark (design.pen `NoJf8` 06b Đăng nhập).
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
         options={{
-          title: "Register",
+          headerShown: false,
         }}
       />
       <Stack.Screen

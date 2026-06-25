@@ -1,16 +1,15 @@
 import React from "react";
-import {View} from "react-native";
+import {Pressable, View} from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
-import {AppButton, AppText} from "@/components/ui";
-import Icon from "@/components/ui/Icon.tsx";
+import {AppText} from "@/components/ui";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch} from "@/store/hooks.ts";
 import {finishOnboarding, setNotificationPermission} from "@/features/onboarding/onboardingSlice.ts";
 
 /**
- * Push priming — the notification opt-in (screens.md §7, handoff screen 07,
+ * Push priming — the notification opt-in (screens.md §7, design.pen `JvIDh`,
  * PRD story 11). Shown **only after signup**: it explains the benefit (streak
  * reminders + "your Lesson is ready") *before* the iOS system permission
  * prompt, so the learner understands why before the one-shot dialog.
@@ -21,28 +20,22 @@ import {finishOnboarding, setNotificationPermission} from "@/features/onboarding
  * with the push integration.
  */
 function BenefitRow({
-  icon,
-  tint,
-  titleKey,
-  descKey,
+  emoji,
+  title,
+  desc,
 }: {
-  icon: React.ComponentProps<typeof Icon>["name"];
-  tint: "warm" | "flow";
-  titleKey: string;
-  descKey: string;
+  emoji: string;
+  title: string;
+  desc: string;
 }) {
   return (
-    <View className={"flex-row gap-3 items-start"}>
-      <View
-        className={`w-9 h-9 rounded-xl items-center justify-center ${
-          tint === "warm" ? "bg-warm-soft" : "bg-flow-soft"
-        }`}
-      >
-        <Icon name={icon} className={`w-5 h-5 ${tint === "warm" ? "text-warm" : "text-flow"}`}/>
+    <View className={"flex-row items-center p-[14px] rounded-2xl bg-surface border border-border"} style={{gap: 12}}>
+      <View className={"w-[42px] h-[42px] rounded-xl bg-flow-soft items-center justify-center"}>
+        <AppText raw style={{fontSize: 20}}>{emoji}</AppText>
       </View>
-      <View className={"flex-1"}>
-        <AppText variant={"heading5"} weight={"bold"}>{titleKey}</AppText>
-        <AppText variant={"bodySmall"} color={"muted"} className={"mt-0.5"}>{descKey}</AppText>
+      <View className={"flex-1"} style={{gap: 3}}>
+        <AppText weight={"bold"} raw className={"text-ink"} style={{fontSize: 15}}>{title}</AppText>
+        <AppText raw className={"text-ink2"} style={{fontSize: 13.5, lineHeight: 20}}>{desc}</AppText>
       </View>
     </View>
   );
@@ -62,54 +55,58 @@ export default function PushPrimingScreen() {
   };
 
   return (
-    <View
-      className={"flex-1 bg-background px-7"}
-      style={{paddingTop: insets.top, paddingBottom: insets.bottom + 16}}
-    >
-      <View className={"flex-1 justify-center"}>
-        <View className={"relative w-20 h-20 mb-6"}>
-          <View className={"absolute inset-0 rounded-3xl bg-flow-soft items-center justify-center"}>
-            <Icon name={"Bell"} className={"text-flow w-9 h-9"}/>
+    <View className={"flex-1 bg-app-bg justify-between"} style={{paddingTop: insets.top}}>
+      {/* Top — bell + headline + benefits. */}
+      <View className={"items-center px-5 pt-[44px]"} style={{gap: 22}}>
+        {/* Bell tile with the "1" notification badge. */}
+        <View style={{width: 72, height: 72}}>
+          <View className={"w-[72px] h-[72px] rounded-[20px] bg-flow-soft items-center justify-center"}>
+            <AppText raw style={{fontSize: 34}}>🔔</AppText>
           </View>
           <View
-            className={"absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-warm items-center justify-center"}
+            className={"absolute w-6 h-6 rounded-xl bg-warm items-center justify-center border-2 border-app-bg"}
+            style={{right: -4, top: -4}}
           >
-            <AppText variant={"labelSmall"} weight={"bold"} className={"text-white"} raw>1</AppText>
+            <AppText weight={"extrabold"} raw className={"text-on-flow"} style={{fontSize: 13}}>1</AppText>
           </View>
         </View>
 
-        <AppText
-          variant={"display3"}
-          weight={"bold"}
-          className={"mb-5"}
-          style={{fontSize: 26, lineHeight: 30}}
-        >
-          ONBOARDING_PUSH_TITLE
+        <AppText weight={"extrabold"} align={"center"} raw className={"text-ink"} style={{fontSize: 26, lineHeight: 31}}>
+          {t("ONBOARDING_PUSH_TITLE")}
         </AppText>
 
-        <View className={"gap-3.5"}>
+        <View className={"w-full pt-1.5"} style={{gap: 12}}>
           <BenefitRow
-            icon={"Flame"}
-            tint={"warm"}
-            titleKey={"ONBOARDING_PUSH_STREAK_TITLE"}
-            descKey={"ONBOARDING_PUSH_STREAK_DESC"}
+            emoji={"🔥"}
+            title={t("ONBOARDING_PUSH_STREAK_TITLE")}
+            desc={t("ONBOARDING_PUSH_STREAK_DESC")}
           />
           <BenefitRow
-            icon={"Sparkles"}
-            tint={"flow"}
-            titleKey={"ONBOARDING_PUSH_READY_TITLE"}
-            descKey={"ONBOARDING_PUSH_READY_DESC"}
+            emoji={"✨"}
+            title={t("ONBOARDING_PUSH_READY_TITLE")}
+            desc={t("ONBOARDING_PUSH_READY_DESC")}
           />
         </View>
       </View>
 
-      <View className={"gap-3"}>
-        <AppButton variant={"primary"} className={"w-full rounded-2xl"} onPress={() => finish(true)}>
-          {t("ONBOARDING_PUSH_ENABLE")}
-        </AppButton>
-        <AppButton variant={"ghost"} className={"w-full rounded-2xl"} onPress={() => finish(false)}>
-          {t("ONBOARDING_PUSH_LATER")}
-        </AppButton>
+      {/* Foot — enable / later. */}
+      <View className={"px-5 pt-3"} style={{gap: 4, paddingBottom: insets.bottom + 20}}>
+        <Pressable
+          onPress={() => finish(true)}
+          className={"w-full items-center justify-center rounded-2xl py-4 bg-flow active:opacity-90"}
+        >
+          <AppText weight={"bold"} raw className={"text-on-flow"} style={{fontSize: 16}}>
+            {t("ONBOARDING_PUSH_ENABLE")}
+          </AppText>
+        </Pressable>
+        <Pressable
+          onPress={() => finish(false)}
+          className={"w-full items-center justify-center rounded-2xl py-3.5 active:opacity-70"}
+        >
+          <AppText weight={"semibold"} raw className={"text-ink3"} style={{fontSize: 15}}>
+            {t("ONBOARDING_PUSH_LATER")}
+          </AppText>
+        </Pressable>
       </View>
     </View>
   );

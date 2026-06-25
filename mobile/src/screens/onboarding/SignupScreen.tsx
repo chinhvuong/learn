@@ -5,9 +5,7 @@ import {useTranslation} from "react-i18next";
 import {useNavigation} from "@react-navigation/native";
 import {z} from "zod";
 import {AppButton, AppInput, AppText} from "@/components/ui";
-import Icon from "@/components/ui/Icon.tsx";
 import {AppleIcon, GoogleIcon} from "@/components/ui/BrandIcons";
-import {useColors} from "@/hooks/useColors.ts";
 import {OnboardingNavigationProp} from "@/navigation/types.ts";
 import {useAppDispatch, useAppSelector} from "@/store/hooks.ts";
 import {migrateAnonymousProgressToAccount} from "@/features/onboarding/onboardingSlice.ts";
@@ -17,7 +15,7 @@ const emailSchema = z.string().email();
 type Provider = "apple" | "google" | "email";
 
 /**
- * Đăng ký — the **delayed signup** (screens.md §6, handoff screen 06, PRD
+ * Đăng ký — the **delayed signup** (screens.md §6, design.pen `a21pD`, PRD
  * stories 9/10). Appears only *after* the aha moment (Result), framed as
  * "saving my progress" — it anchors on the Items just Absorbed and the streak
  * just opened.
@@ -37,7 +35,6 @@ export default function SignupScreen() {
   const {t} = useTranslation();
   const navigation = useNavigation<OnboardingNavigationProp>();
   const dispatch = useAppDispatch();
-  const colors = useColors();
   const absorbedTotal = useAppSelector(s => s.onboarding.anonymousProgress.absorbedTotal);
 
   const [emailMode, setEmailMode] = useState(false);
@@ -63,37 +60,37 @@ export default function SignupScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className={"flex-1 bg-background"}
+      className={"flex-1 bg-app-bg"}
     >
       <ScrollView
         className={"flex-1"}
         contentContainerStyle={{
           flexGrow: 1,
-          paddingHorizontal: 28,
-          paddingTop: insets.top + 16,
-          paddingBottom: insets.bottom + 16,
+          justifyContent: "space-between",
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 40,
+          paddingBottom: insets.bottom + 24,
         }}
         keyboardShouldPersistTaps={"handled"}
         showsVerticalScrollIndicator={false}
       >
-        <View className={"flex-1 justify-center"}>
-          <View className={"w-14 h-14 rounded-2xl bg-warm-soft items-center justify-center mb-5"}>
-            <Icon name={"Flame"} className={"text-warm w-7 h-7"}/>
+        {/* Hero — flame tile + headline (anchored on the streak just opened). */}
+        <View className={"items-center"} style={{gap: 16}}>
+          <View className={"w-16 h-16 rounded-[18px] bg-warm-soft items-center justify-center"}>
+            <AppText raw style={{fontSize: 30}}>🔥</AppText>
           </View>
-          <AppText
-            variant={"display3"}
-            weight={"bold"}
-            className={"mb-2.5"}
-            style={{fontSize: 26, lineHeight: 30}}
-          >
-            ONBOARDING_SIGNUP_TITLE
+          <AppText weight={"extrabold"} align={"center"} raw className={"text-ink"} style={{fontSize: 26, lineHeight: 31}}>
+            {t("ONBOARDING_SIGNUP_TITLE")}
           </AppText>
-          <AppText variant={"body"} color={"muted"} className={"mb-7"} raw>
+          <AppText align={"center"} color={"muted"} raw style={{fontSize: 14.5, lineHeight: 22}}>
             {t("ONBOARDING_SIGNUP_SUBTITLE", {count: absorbedTotal})}
           </AppText>
+        </View>
 
+        {/* Bottom — provider buttons + terms. */}
+        <View style={{gap: 12}}>
           {emailMode ? (
-            <View className={"gap-3"}>
+            <View style={{gap: 10}}>
               <AppInput
                 placeholder={t("ONBOARDING_SIGNUP_EMAIL_PLACEHOLDER")}
                 keyboardType={"email-address"}
@@ -110,47 +107,41 @@ export default function SignupScreen() {
               </AppButton>
             </View>
           ) : (
-            <View className={"gap-3"}>
-              <AppButton
-                variant={"default"}
-                className={"rounded-2xl bg-ink"}
-                textClassname={"text-background"}
-                icon={<View><AppleIcon size={17} color={colors.background}/></View>}
+            <View style={{gap: 10}}>
+              <Pressable
                 onPress={() => signUpWith("apple")}
+                className={"flex-row items-center justify-center gap-2 rounded-[14px] py-[15px] bg-ink active:opacity-90"}
               >
-                {t("ONBOARDING_SIGNUP_APPLE")}
-              </AppButton>
-              <AppButton
-                variant={"outline"}
-                className={"rounded-2xl"}
-                icon={<GoogleIcon size={17}/>}
+                <AppleIcon size={16} color="#F8FAFB"/>
+                <AppText weight={"semibold"} raw className={"text-app-bg"} style={{fontSize: 15.5}}>
+                  {t("ONBOARDING_SIGNUP_APPLE")}
+                </AppText>
+              </Pressable>
+              <Pressable
                 onPress={() => signUpWith("google")}
+                className={"flex-row items-center justify-center gap-2 rounded-[14px] py-[15px] bg-surface border border-border active:opacity-90"}
               >
-                {t("ONBOARDING_SIGNUP_GOOGLE")}
-              </AppButton>
-              <AppButton
-                variant={"outline"}
-                className={"rounded-2xl"}
-                icon={<Icon name={"Mail"} className={"text-foreground"}/>}
+                <GoogleIcon size={16}/>
+                <AppText weight={"semibold"} raw className={"text-ink"} style={{fontSize: 15.5}}>
+                  {t("ONBOARDING_SIGNUP_GOOGLE")}
+                </AppText>
+              </Pressable>
+              <Pressable
                 onPress={() => setEmailMode(true)}
+                className={"flex-row items-center justify-center gap-2 rounded-[14px] py-[15px] bg-surface border border-border active:opacity-90"}
               >
-                {t("ONBOARDING_SIGNUP_EMAIL")}
-              </AppButton>
+                <AppText raw style={{fontSize: 15}}>✉️</AppText>
+                <AppText weight={"semibold"} raw className={"text-ink"} style={{fontSize: 15.5}}>
+                  {t("ONBOARDING_SIGNUP_EMAIL")}
+                </AppText>
+              </Pressable>
             </View>
           )}
-        </View>
 
-        <Pressable className={"items-center pt-6"} onPress={() => undefined}>
-          <AppText variant={"labelSmall"} color={"muted"} align={"center"} raw>
-            {t("ONBOARDING_SIGNUP_TERMS_PREFIX")}{" "}
-            <AppText variant={"labelSmall"} weight={"semibold"} raw>
-              {t("ONBOARDING_SIGNUP_TERMS")}
-            </AppText>{" · "}
-            <AppText variant={"labelSmall"} weight={"semibold"} raw>
-              {t("ONBOARDING_SIGNUP_PRIVACY")}
-            </AppText>
+          <AppText align={"center"} color={"muted"} raw style={{fontSize: 12, lineHeight: 17}}>
+            {t("ONBOARDING_SIGNUP_TERMS_PREFIX")} {t("ONBOARDING_SIGNUP_TERMS")} · {t("ONBOARDING_SIGNUP_PRIVACY")}
           </AppText>
-        </Pressable>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
