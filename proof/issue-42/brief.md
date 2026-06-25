@@ -33,6 +33,12 @@ Fix (contained, threaded via one route param):
 
 Verified chain wiring: Result `Tiếp tục` → `Signup`; Signup provider/email → `PushPriming`; PushPriming `Bật thông báo`/`Để sau` → `reset({routes:[{name:"Main"}]})`. The full chain **Welcome → Topics → Reading Level → [Golden First Lesson] → Result → Signup/Login → Push priming → Main** is now navigable end to end.
 
+## i18n fix (auth screens rendered raw keys on an English-locale device)
+
+`config/i18n.ts` sets `lng: getDeviceLanguage()` with `fallbackLng: 'en'`, so on an English-locale simulator the active resource is `en.json` (the app is VN-only — `en.json` carries the Vietnamese UI copy). The 14 `LOGIN_*` + 14 `REGISTER_*` keys existed only in `vi.json`, so the Login (`NoJf8`) and Register screens fell through to raw keys (`LOGIN_TITLE`, `LOGIN_APPLE`, `LOGIN_NO_ACCOUNT`, …).
+
+Fix: mirrored all 28 `LOGIN_*`/`REGISTER_*` keys (exact Vietnamese values from `vi.json`, matching the design copy) into `en.json`. Then swept **every** UPPER_SNAKE locale key referenced by `screens/onboarding/*`, `screens/auth/*` and `config/onboarding.ts` against both files: **0 keys missing from either `vi.json` or `en.json`** (75 onboarding/auth keys checked). The onboarding/Welcome-hero keys were already present in both.
+
 ## Verification
 
 - `tsc --noEmit`: clean (exit 0, no errors).
