@@ -23,7 +23,7 @@
  */
 
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {GOLDEN_FIRST_LESSON} from '@/features/lesson/goldenFirstLesson';
+import {SECTION10_LESSON} from '@/features/lesson/lessonPlayerSection10';
 import {nextLesson} from './recommendation';
 import {
   CURRENT_SERIES_ID,
@@ -175,10 +175,11 @@ const initialState: HomeState = {
   ],
 
   // Seed an in-progress Lesson so Continue resumes by default; clearing it
-  // (clearInProgressLesson) falls Home back to the recommendation.
+  // (clearInProgressLesson) falls Home back to the recommendation. Points at the
+  // §10 flagship Lesson so Continue opens the Cover → Warm-up → Reading flow.
   inProgressLesson: {
-    lessonId: GOLDEN_FIRST_LESSON.id,
-    title: GOLDEN_FIRST_LESSON.title,
+    lessonId: SECTION10_LESSON.id,
+    title: SECTION10_LESSON.title,
     estimatedMinutes: 4,
     seriesName: 'Công nghệ B1',
     seriesIndex: 3,

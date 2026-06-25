@@ -24,6 +24,14 @@ import {
 } from '@/features/lesson/goldenFirstLesson';
 import {GOLDEN_AUDIO_LESSON} from '@/features/lesson/goldenAudioLesson';
 import {
+  SECTION10_COVERS,
+  SECTION10_COVER_TITLES,
+  SECTION10_ITEMS_BY_ID,
+  SECTION10_LESSON,
+  SECTION10_WARMUP_GROUPS,
+  SECTION10_WARMUP_ORDER,
+} from '@/features/lesson/lessonPlayerSection10';
+import {
   learnerFromHome,
   nextLesson,
   RECOMMENDATION_CATALOG,
@@ -32,6 +40,9 @@ import {
 import type {RecommendedNextLesson} from '@/features/lesson/components/LessonCompleteView';
 import LessonLoadingView from '@/features/lesson/components/LessonLoadingView';
 import LessonCoreIntroPlayer from '@/features/lesson/components/LessonCoreIntroPlayer';
+import LessonCoverScreen from '@/features/lesson/components/LessonCoverScreen';
+import LessonWarmupPlayer from '@/features/lesson/components/LessonWarmupPlayer';
+import LessonReadingImmersion from '@/features/lesson/components/LessonReadingImmersion';
 import LessonReadingPlayer from '@/features/lesson/components/LessonReadingPlayer';
 import LessonListeningPlayer from '@/features/lesson/components/LessonListeningPlayer';
 import LessonComprehensionQuiz from '@/features/lesson/components/LessonComprehensionQuiz';
@@ -63,22 +74,47 @@ export default function LessonPlayerScreen({route}: Props) {
   const {t} = useTranslation();
   const {lessonId, onboarding} = route.params ?? {};
 
-  // Only the two bundled Lessons exist today; a real lookup by `lessonId`
-  // arrives with the lesson API. Route to the audio Lesson when asked for it.
+  // The bundled Lessons available today; a real lookup by `lessonId` arrives
+  // with the lesson API. Route to the audio Lesson or the §10 flagship Lesson
+  // (Cover → Warm-up → Reading immersion, screens.md §10) when asked for it.
   const lesson =
-    lessonId === GOLDEN_AUDIO_LESSON.id ? GOLDEN_AUDIO_LESSON : GOLDEN_FIRST_LESSON;
+    lessonId === GOLDEN_AUDIO_LESSON.id
+      ? GOLDEN_AUDIO_LESSON
+      : lessonId === SECTION10_LESSON.id
+        ? SECTION10_LESSON
+        : GOLDEN_FIRST_LESSON;
 
   // The Practice Mode is chosen by Source type: audio Lessons get Listening
   // Replay, text Lessons get Reading. This does not change Reading behavior.
   const isAudioLesson = !!lesson.audio;
+
+  // §10 flagship flow (Cover → Warm-up → Reading immersion) runs for Lessons
+  // carrying the §10 presentation layers (an authored Cover + paginated reading
+  // pages). Other Lessons keep the loading → core → reading flow.
+  const isSection10 = !!lesson.cover && !!lesson.readingPages;
 
   // Seed the North Star from a demo cumulative total (the handoff starts at
   // 1228 and counts up as Items are Absorbed). Home will own this later.
   const northStarBase = 1228;
 
   const [phase, setPhase] = useState<
-    'loading' | 'core' | 'reading' | 'quiz' | 'complete'
-  >('loading');
+    | 'loading'
+    | 'cover'
+    | 'warmup'
+    | 'readingImmersion'
+    | 'core'
+    | 'reading'
+    | 'quiz'
+    | 'complete'
+  >(isSection10 ? 'cover' : 'loading');
+  // When opening the Warm-up directly from the Cover's "Lướt nhanh", start it in
+  // the list view (LP2b) instead of the deck (LP2).
+  const [warmupView, setWarmupView] = useState<'deck' | 'list'>('deck');
+  // Previewed Cover Source-type variant (cycled by the Cover's ↗ share) so all
+  // four per-Source-type Cover variants (screens.md §10 LP1) are reachable.
+  const [coverVariant, setCoverVariant] = useState<keyof typeof SECTION10_COVERS>(
+    'youtube',
+  );
   const session = useAppSelector(state => state.lessonSession);
   const home = useAppSelector(state => state.home);
   const northStarLive =
@@ -231,6 +267,50 @@ export default function LessonPlayerScreen({route}: Props) {
     <View className="flex-1 bg-background" testID={lessonId ? `lesson-${lessonId}` : undefined}>
       {phase === 'loading' ? (
         <LessonLoadingView variant="loading" />
+      ) : phase === 'cover' ? (
+        <LessonCoverScreen
+          lesson={lesson}
+          cover={lesson.cover ? SECTION10_COVERS[coverVariant] : SECTION10_COVERS.youtube}
+          title={
+            lesson.cover ? SECTION10_COVER_TITLES[coverVariant] : undefined
+          }
+          onClose={close}
+          onStart={() => {
+            setWarmupView('deck');
+            setPhase('warmup');
+          }}
+          onOpenList={() => {
+            setWarmupView('list');
+            setPhase('warmup');
+          }}
+          onShare={() => {
+            const order: (keyof typeof SECTION10_COVERS)[] = [
+              'youtube',
+              'article',
+              'podcast',
+              'text',
+            ];
+            const i = order.indexOf(coverVariant);
+            setCoverVariant(order[(i + 1) % order.length]);
+          }}
+        />
+      ) : phase === 'warmup' ? (
+        <LessonWarmupPlayer
+          order={SECTION10_WARMUP_ORDER}
+          groups={SECTION10_WARMUP_GROUPS}
+          initialView={warmupView}
+          onClose={close}
+          onStartReading={() => setPhase('readingImmersion')}
+        />
+      ) : phase === 'readingImmersion' ? (
+        <LessonReadingImmersion
+          lesson={lesson}
+          pages={lesson.readingPages ?? []}
+          itemsById={SECTION10_ITEMS_BY_ID}
+          northStarBase={northStarBase}
+          onClose={close}
+          onCompleted={() => setPhase('quiz')}
+        />
       ) : phase === 'core' ? (
         <LessonCoreIntroPlayer
           lesson={lesson}

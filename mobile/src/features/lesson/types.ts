@@ -132,6 +132,76 @@ export interface LessonAudio {
 }
 
 /**
+ * The Source type a Lesson was built from (CONTEXT.md → "Source"). Drives the
+ * Cover variant chrome (screens.md §10 LP1 · `ZeE5Q`/`LvMs5`/`tiWTV`/`fvpcK`):
+ * the hero treatment, the source pill, the duration label, and the secondary
+ * "view original" link all switch on this — never the learning core.
+ */
+export type SourceType = 'youtube' | 'article' | 'podcast' | 'text';
+
+/**
+ * The Cover (screens.md §10 LP1) of a Lesson — the entry screen of the Lesson
+ * Player flow. Models the per-Source-type hero plus the "Bạn sẽ nạp được"
+ * preview of the Item-type counts (Vocabulary / Chunk / Grammar Point). It is
+ * presentation metadata only; the learning core stays in `Lesson`.
+ */
+export interface LessonCover {
+  /** Source type — selects the Cover variant chrome. */
+  sourceType: SourceType;
+  /** Source pill label, e.g. "▶ YouTube", "📄 Bài viết" (Vietnamese chrome). */
+  sourcePillLabel: string;
+  /** "Tạo riêng từ…" provenance tag above the title (Vietnamese). */
+  originTag: string;
+  /** Channel / author · topic line under the title, e.g. "TechVision · Công nghệ". */
+  channelLine: string;
+  /** Hero duration / length badge, e.g. "12:30", "6 phút đọc". */
+  durationLabel: string;
+  /** Third meta chip, e.g. "18 Item", "1 240 từ", "Tập 142". */
+  lengthChip: string;
+  /** Secondary "view the original Source" link label (Vietnamese). */
+  originalLinkLabel: string;
+  /** Optional pasted-text preview shown over the gradient hero (Raw text). */
+  textPreview?: string;
+}
+
+/**
+ * One Item-type group of the Warm-up "danh sách" (screens.md §10 LP2b ·
+ * `L8QvdJ`) — the quick-skim list shown before reading, grouped by the three
+ * Item types each with a count badge. Reuses the projected `Item`s of the
+ * Lesson, so the Warm-up never duplicates the learning core.
+ */
+export interface WarmupGroup {
+  /** Which of the three Item types this group holds. */
+  type: ItemKind;
+  /** The projected Items of this type, in Warm-up order. */
+  items: Item[];
+}
+
+/**
+ * One inline span of a Reading-immersion page (screens.md §10 LP3 · `ZVzfM`).
+ * Either plain Newsreader reading text, or a reference to an Item (by id) that
+ * renders as a tappable teal token (the absorption gesture target). A
+ * Grammar-Point span carries `grammar: true` so it renders as the teal-soft
+ * highlighted run (the design's grammar box) rather than an inline word token.
+ */
+export type ReadingSpan =
+  | {kind: 'text'; text: string}
+  | {kind: 'item'; itemId: string; text: string; grammar?: boolean};
+
+/**
+ * One page of the Reading immersion (screens.md §10 LP3/LP3b/LP3c) — a fixed
+ * slice of the Bilingual Passage's Target-Language text, paginated like a book
+ * ("Trang N / M"). Each page is a flat list of spans; paragraph breaks within a
+ * page are modeled with an empty `{kind:'text', text:''}` paragraph marker.
+ */
+export interface ReadingPage {
+  /** Stable page id. */
+  id: string;
+  /** The Target-Language spans of this page, in reading order. */
+  spans: ReadingSpan[];
+}
+
+/**
  * The kind of comprehension a quiz question probes (screens.md §12; the
  * handoff's `lpQuizData`). Each maps to an authored Vietnamese type label.
  *   - `mainIdea`  — what the passage is mostly about (ý chính);
@@ -177,6 +247,18 @@ export interface Lesson {
   /** The projected Candidate Items the learner must process to complete. */
   items: Item[];
   passage: BilingualPassage;
+  /**
+   * Cover (screens.md §10 LP1) presentation metadata — the per-Source-type hero
+   * + Item-count preview shown before the learner starts. Optional so existing
+   * bundled Lessons without an authored Cover keep working.
+   */
+  cover?: LessonCover;
+  /**
+   * Reading-immersion pages (screens.md §10 LP3 · `ZVzfM`) — the Target-Language
+   * text paginated like a book for the "Đắm chìm đọc" surface. Optional; absent
+   * → the Reading immersion falls back to paginating `passage.sentences`.
+   */
+  readingPages?: ReadingPage[];
   /**
    * Listening Replay layer — present only for audio Sources (podcast, video,
    * narrated text). When set, the Lesson Player offers the Listening Replay
