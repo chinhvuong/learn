@@ -43,6 +43,7 @@ export default function LearnScreen() {
       onContinue={openLesson}
       onOpenRecommended={openLesson}
       onOpenLibrary={() => navigation.navigate('MyLibrary')}
+      onOpenSeries={() => navigation.navigate('SeriesBrowse')}
       onOpenSettings={() => navigation.navigate('Settings')}
     />
   );

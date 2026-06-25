@@ -30,5 +30,6 @@ export type {MilestoneDisplay, MilestoneTone} from './milestoneDisplay';
 export {default as CelebrationView} from './components/CelebrationView';
 export {default as MilestoneCard} from './components/MilestoneCard';
 export {default as LevelUpView} from './components/LevelUpView';
+export {default as DailyGoalView} from './components/DailyGoalView';
 export {default as ProfileView} from './components/ProfileView';
 export {default as QuickReviewView} from './components/QuickReviewView';
